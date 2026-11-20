@@ -66,13 +66,26 @@ F3020 회귀 테스트만 실행하려면 `.venv/Scripts/python -m pytest -q tes
 .venv/Scripts/python -m scripts.verify_gms_preflight --single-request
 ```
 
-2026-11-20 실제 재검증에서 GMS Responses API가 HTTP 200을 반환했고 `gpt-6.1-sol`이 일치했습니다. Tool 3종의 이름·인자 검증, Vue의 실제 계획 응답·저장·재조회·실행 로그, 합성 이상 이벤트 1건의 실제 GMS 원인 진단을 확인했습니다. 이전 HTTP 429는 [보고서](reports/phase-04.md)에 보존했습니다. 대표 요청의 브라우저 응답 표시는 13.7초였으며 일반 이용 환경의 응답 적합성(NF3005)과 계정별 외부 API 승인·쿼터(NF3007)는 확인 대기입니다.
+2026-11-20 실제 재검증에서 GMS Responses API가 HTTP 200을 반환했고 `gpt-6.1-sol`이 일치했습니다. Tool 3종의 이름·인자 검증, Vue의 실제 계획 응답·저장·재조회·실행 로그, 합성 이상 이벤트 1건의 실제 GMS 원인 진단을 확인했습니다. 후속 실연동에서 Chrome 응답 표시는 신규 계획 13.0초, 월세 변경 7.5초, 재계획 상한 도달 19.3초였습니다. 이전 HTTP 429는 [보고서](reports/phase-04.md)에 보존했습니다. 대상 사용자의 대기 적합성(NF3005)과 계정별 외부 API 승인·쿼터(NF3007)는 확인 대기입니다.
 
 대외비 표시가 있는 공식 요구사항 PDF는 저장소에 포함하지 않습니다. 해당 원본은 제공받은 로컬 사본을 사용합니다.
+
+## 외부 API 이용 조건
+
+YKP는 Vue 화면, FastAPI 서버, `backend/app/agents/` 실행 로직과 `backend/app/tools/` 제공자 모듈을 분리합니다. 외부 호출은 서버의 주소·키워드 검색, 과거 전월세 조회, 건축물 표제부 조회에 한정합니다. UI는 출처를 표시하며 과거 거래로 현재 임대 가능 여부를 판단하지 않습니다.
+
+| 제공자 | 공개 이용 조건 | 계정에서 확인할 값 |
+|---|---|---|
+| 카카오 로컬 | 무료 쿼터 적용 앱의 주소·키워드 조회는 공개 일간 제공량이 각각 100,000건입니다. 개발자 계정 기준 최초 활성화 앱에 무료 쿼터가 적용되며 다른 앱 또는 초과 사용에는 유료 설정이 필요할 수 있습니다. [쿼터](https://developers.kakao.com/docs/ko/getting-started/quota) · [카카오맵 정책](https://developers.kakao.com/docs/ko/kakaomap/common) · [운영 정책](https://developers.kakao.com/terms/ko/site-policies) | 앱 관리 → 카카오맵 → 사용 설정에서 활성 상태, 앱 정보에서 무료 쿼터 뱃지, 통계 → 쿼터에서 월·일 한도와 해당 기간 사용량을 확인합니다. [통계 안내](https://developers.kakao.com/docs/ko/getting-started/stat) |
+| 국토교통부 연립다세대 전월세 | 무료, 이용허락범위 제한 없음. Phase 1 당시 확인한 공개 개발계정 표기는 10,000건입니다. 지역·계약월로 조회하고 과거 신고 자료로 표시합니다. [공식 데이터와 조건](https://www.data.go.kr/data/15126473/openapi.do) | 공공데이터포털 로그인 → 마이페이지 → 데이터 활용 → Open API에서 개별 활용 신청을 열어 승인 상태, 개발·운영 유형, 적용 트래픽과 사용량, 이용 기간을 확인합니다. |
+| 국토교통부 건축HUB 건축물대장 | 무료, 이용허락범위 제한 없음. Phase 1 당시 확인한 공개 개발계정 표기는 10,000건입니다. 표제부 조회로 건물 수준의 일치만 판단합니다. [공식 데이터와 조건](https://www.data.go.kr/data/15134735/openapi.do) · [공공데이터포털 이용 정책](https://www.data.go.kr/ugs/selectPortalPolicyView.do) | 같은 메뉴에서 건축HUB 신청을 따로 열어 승인 상태, 개발·운영 유형, 적용 트래픽과 사용량, 이용 기간을 확인합니다. |
+
+공개 제공량과 실제 계정에 적용된 한도는 별개입니다. 실제 이용 조건 준수 판정에 필요한 관리 화면 자료에는 승인 상태, 유형, 한도, 사용량 및 기간만 남기고 인증키·토큰·계정 식별정보는 가려 주세요.
 
 ## 제출 자료
 
 - [요구사항 추적·Agent 설계·REST API 계약](YKP_codex_handoff_v1/docs/ARCHITECTURE_AND_SCHEMA_v1.md)과 [Tool 입출력 명세](reports/evidence/phase-01-tool-specs.json). 로컬 서버가 실행 중이면 [Swagger UI](http://127.0.0.1:8000/docs)와 [OpenAPI JSON](http://127.0.0.1:8000/openapi.json)을 확인할 수 있습니다.
 - [필수 기능 및 Day 3 검증 결과](reports/phase-04.md), [대표 요청 5개의 최종 응답과 전체 로그](reports/evidence/day-03-scenarios.json), Mock 시연 화면 [대화](reports/evidence/day-03-mock-chat.png) · [실행 타임라인](reports/evidence/day-03-mock-timeline.png)
+- [SSAFY 공식 셀프 체크리스트](셀프체크리스트.xlsx)와 [외부 API의 공식 출처·공개 이용 조건](reports/phase-01.md). 체크리스트는 운영 환경 응답 시간의 사용 적합성, 계정별 API 승인·쿼터 및 팀 공식 기획 검증 자료를 확인 대기로 기록합니다.
 
 제출용 대표 요청 5건과 스크린샷은 Mock GMS 및 합성 외부 데이터로 제작했습니다. 실제 GMS와 실제 외부 데이터로 수행한 대표 요청의 결과는 [Phase 4 보고서](reports/phase-04.md)에 별도로 기록했습니다.

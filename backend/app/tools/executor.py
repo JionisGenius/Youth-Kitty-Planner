@@ -64,16 +64,22 @@ def execute_tool(name, arguments, *, session, keys):
         return _failure(meta, exc.code, exc.details or None)
     except (KeyError, TypeError, ValueError, AttributeError, OverflowError):
         return _failure(meta, "SCHEMA_MISMATCH")
+    except Exception:
+        return _failure(meta, "UNKNOWN_ERROR")
 
 
 def _rent(session, key, args, meta):
     prior_month = meta.query_as_of.replace(day=1) - timedelta(days=1)
     month = args.contract_month or prior_month.strftime("%Y%m")
+    if month > meta.query_as_of.strftime("%Y%m"):
+        month = prior_month.strftime("%Y%m")
     meta.effective_period = month
     meta.caveats = [
         "신고된 과거 계약 자료입니다. 현재 임대 가능 여부는 확인할 수 없습니다.",
         "신고 및 공개 시차가 있을 수 있으며 빈 결과는 현재 매물 부재를 의미하지 않습니다.",
     ]
+    if args.contract_month and args.contract_month != month:
+        meta.caveats.append(f"미래 계약월 {args.contract_month} 대신 직전 완료 월 {month}을 조회했습니다.")
     candidates = []
     rows = molit_rent.pages(session, key, args.sigungu_code, month)
     for index, row in enumerate(rows):

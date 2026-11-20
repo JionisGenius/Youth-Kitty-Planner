@@ -40,15 +40,22 @@ def planning_evaluations(constraints: UserConstraints):
     if deadline is not None or constraints.preparation_days is not None:
         finish = end.isoformat() if end is not None and deadline is not None else None
         expected = deadline.isoformat() if deadline else None
+        caveat = "준비 시작일부터 기간을 세고 출근 전날까지 준비를 마칩니다."
+        days = constraints.preparation_days
+        if end is None and deadline is not None and days is not None and days < deadline.toordinal():
+            latest_start = deadline - timedelta(days=days)
+            caveat += f" {days}일을 확보하려면 늦어도 {latest_start.isoformat()}에 시작해야 합니다."
         checks.append(_assessment("PLAN_TIMELINE", expected, finish,
                                   end is not None and deadline is not None and end < deadline,
-                                  caveat="준비 시작일부터 기간을 세고 출근 전날까지 준비를 마칩니다."))
+                                  caveat=caveat))
     for rule, limit, caveat in (
         ("MAINTENANCE_FEE", constraints.max_maintenance_fee_krw, "관리비 자료가 없습니다."),
         ("COMMUTE_TIME", constraints.max_commute_minutes, "경로와 출근 시간대 소요 시간을 확인해야 합니다."),
     ):
         if limit is not None:
-            checks.append(_assessment(rule, limit, None, False, caveat=caveat))
+            ceiling = f"{limit:,}원" if rule == "MAINTENANCE_FEE" else f"{limit}분"
+            checks.append(_assessment(rule, limit, None, False,
+                                      caveat=f"{caveat} 실제 값이 {ceiling} 이하인지 확인해 주세요."))
     return checks
 
 

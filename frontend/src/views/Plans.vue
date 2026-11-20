@@ -1,10 +1,11 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import TaskFields from '../components/TaskFields.vue'
+import UiIcon from '../components/UiIcon.vue'
 import { api, conversation, session } from '../state.js'
 import { errorMessage } from '../api.js'
-import { rules, statuses, taskEditor, taskPayload, timestamp } from '../format.js'
+import { clockTime, dayLabel, money, providers, rules, statuses, taskEditor, taskPayload, timestamp } from '../format.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,6 +24,25 @@ const editing = ref(null)
 const titleEdit = ref(null)
 const deletingPlan = ref(false)
 const form = ref(null)
+const panelTitle = ref(null)
+const taskTitle = ref(null)
+const taskGroups = computed(() => {
+  const tasks = [...(detail.value?.tasks ?? [])].sort((a, b) =>
+    a.task_date.localeCompare(b.task_date) ||
+    (a.scheduled_start_at ? Date.parse(a.scheduled_start_at) : Number.MAX_SAFE_INTEGER) -
+    (b.scheduled_start_at ? Date.parse(b.scheduled_start_at) : Number.MAX_SAFE_INTEGER),
+  )
+  const groups = new Map()
+  for (const task of tasks) {
+    if (!groups.has(task.task_date)) groups.set(task.task_date, [])
+    groups.get(task.task_date).push(task)
+  }
+  return groups
+})
+const doneCount = computed(() => detail.value?.tasks.filter((task) => task.status === 'DONE').length ?? 0)
+const overlappingTasks = computed(() => new Set(
+  detail.value?.warnings.flatMap((warning) => [warning.task_id, warning.conflicting_task_id]) ?? [],
+))
 const taskTitles = computed(() => Object.fromEntries([
   ...collection.value.items.flatMap((plan) => plan.tasks), ...(detail.value?.tasks ?? []),
 ].map((task) => [task.id, task.title])))
@@ -56,7 +76,10 @@ async function selectPlan(id) {
   detailLoading.value = true
   try {
     const plan = await api.request('/plans/' + id)
-    if (version === detailVersion) detail.value = plan
+    if (version === detailVersion) {
+      detail.value = plan
+      nextTick(() => panelTitle.value?.focus())
+    }
   } catch (failure) {
     if (version === detailVersion) error.value = errorMessage(failure)
   } finally {
@@ -76,6 +99,7 @@ function openForm(draft = null) {
     planning_end_date: draft?.planning_end_date ?? '', constraints: draft?.constraints ?? {},
     source_refs: draft?.source_refs, runId: draft?.runId, tasks: (draft?.tasks ?? []).map(taskEditor),
   }
+  nextTick(() => panelTitle.value?.focus())
 }
 
 watch(() => [session.status, session.epoch], () => {
@@ -152,6 +176,7 @@ function patch(changes) {
 
 function startEdit(task = null) {
   editing.value = { id: task?.id, task: taskEditor(task ?? { task_date: detail.value.planning_start_date }) }
+  nextTick(() => taskTitle.value?.focus())
 }
 
 function updateTask() {
@@ -173,17 +198,23 @@ function removePlan() {
 </script>
 
 <template>
-  <header class="page-header"><h1>내 계획</h1><button class="primary" :disabled="busy || session.status !== 'active'" @click="openForm()">새 계획</button></header>
+  <header class="page-header">
+    <div><h1>내 계획</h1><p>독립 준비 일정과 해야 할 일을 한곳에서 관리하세요.</p></div>
+    <button class="primary" :disabled="busy || session.status !== 'active'" @click="openForm()"><span aria-hidden="true">＋</span> 새 계획</button>
+  </header>
   <div class="management">
     <section class="panel list-panel">
-      <div class="panel-heading"><h2>저장한 계획</h2><small>{{ collection.total }}개</small></div>
+      <div class="panel-heading"><h2>저장한 계획</h2><span class="chip neutral">{{ collection.total }}개</span></div>
       <p v-if="listLoading" role="status" class="loading">목록을 불러오는 중입니다.</p>
       <div v-else-if="listError" role="alert" class="error-box">{{ listError }} <button @click="loadList">다시 불러오기</button></div>
       <p v-else-if="!collection.items.length" class="empty">아직 저장한 계획이 없습니다.</p>
       <ul v-else class="selection-list">
         <li v-for="plan in collection.items" :key="plan.id">
-          <button :disabled="busy" :aria-pressed="activeId === plan.id" @click="selectPlan(plan.id)">
+          <button class="plan-card" :disabled="busy" :aria-pressed="activeId === plan.id" @click="selectPlan(plan.id)">
+            <span class="plan-card-top"><span class="mini-icon"><UiIcon name="home" /></span><UiIcon name="arrow" /></span>
             <strong>{{ plan.title }}</strong><small>{{ plan.planning_start_date }} ~ {{ plan.planning_end_date }}</small>
+            <small>생성 {{ timestamp(plan.created_at) }}</small>
+            <span class="plan-card-meta">완료 {{ plan.tasks.filter((task) => task.status === 'DONE').length }} / {{ plan.tasks.length }}</span>
           </button>
         </li>
       </ul>
@@ -200,7 +231,7 @@ function removePlan() {
       <p v-if="detailLoading || busy" class="loading" role="status">요청을 처리하고 있습니다.</p>
 
       <form v-if="form" class="stack" @submit.prevent="save">
-        <h2>{{ form.runId ? '계획 초안 저장' : '계획 만들기' }}</h2>
+        <h2 ref="panelTitle" tabindex="-1">{{ form.runId ? '계획 초안 저장' : '계획 만들기' }}</h2>
         <div class="form-grid">
           <label class="wide">계획 이름 <input v-model.trim="form.title" required maxlength="160"></label>
           <label>계획 시작일 <input v-model="form.planning_start_date" type="date" required></label>
@@ -219,11 +250,16 @@ function removePlan() {
 
       <template v-else-if="detail">
         <div class="detail-heading">
-          <div><h2>{{ detail.title }}</h2><p class="muted">{{ detail.planning_start_date }} ~ {{ detail.planning_end_date }} · 버전 {{ detail.revision_number }}</p></div>
-          <RouterLink :to="{ path: '/', query: { plan: detail.id } }">계획 이어서 상담</RouterLink>
+          <div><h2 ref="panelTitle" tabindex="-1">{{ detail.title }}</h2><p class="muted">{{ detail.planning_start_date }} ~ {{ detail.planning_end_date }} · 버전 {{ detail.revision_number }}</p><small>생성 {{ timestamp(detail.created_at) }}</small></div>
+          <RouterLink class="text-link" :to="{ path: '/', query: { plan: detail.id } }">계획 이어서 상담 <span aria-hidden="true">↗</span></RouterLink>
         </div>
+        <dl class="metrics plan-metrics">
+          <div><dt>보증금 상한</dt><dd>{{ money(detail.constraints?.max_deposit_krw) }}</dd></div>
+          <div><dt>월세 상한</dt><dd>{{ money(detail.constraints?.max_monthly_rent_krw) }}</dd></div>
+          <div><dt>준비 기간</dt><dd>{{ detail.constraints?.preparation_days == null ? '미정' : detail.constraints.preparation_days + '일' }}</dd></div>
+        </dl>
         <div v-if="detail.warnings.length" class="warning-box" role="status">
-          <strong>겹치는 일정 {{ detail.warnings.length }}건</strong>
+          <strong class="notice-heading"><UiIcon name="warning" />겹치는 일정 {{ detail.warnings.length }}건</strong>
           <p>계획은 저장되어 있습니다. 아래 일정의 시간을 확인해 주세요.</p>
           <ul><li v-for="warning in detail.warnings" :key="warning.task_id + warning.conflicting_task_id">
             {{ taskTitles[warning.task_id] ?? '이 계획의 작업' }} · {{ taskTitles[warning.conflicting_task_id] ?? '다른 계획의 작업' }}
@@ -242,36 +278,57 @@ function removePlan() {
           <div class="actions"><button class="danger" :disabled="busy" @click="removePlan">삭제 확인</button><button @click="deletingPlan = false">취소</button></div>
         </div>
 
-        <div class="panel-heading tasks-heading"><h3>작업</h3><button :disabled="busy || conflict" @click="startEdit()">작업 추가</button></div>
+        <div class="panel-heading tasks-heading">
+          <div><h3>준비 일정</h3><small>{{ doneCount }} / {{ detail.tasks.length }}개 완료</small></div>
+          <button :disabled="busy || conflict" @click="startEdit()">＋ 작업 추가</button>
+        </div>
+        <progress v-if="detail.tasks.length" class="task-progress" :value="doneCount" :max="detail.tasks.length" aria-label="준비 작업 완료 진행률"></progress>
         <p v-if="!detail.tasks.length" class="empty">아직 작업이 없습니다.</p>
-        <ul v-else class="task-list">
-          <li v-for="task in detail.tasks" :key="task.id">
-            <div><strong>{{ task.title }}</strong> <span class="chip">{{ statuses[task.status] }}</span>
-              <p>{{ task.scheduled_start_at ? timestamp(task.scheduled_start_at) + ' ~ ' + timestamp(task.scheduled_end_at) : task.task_date + ' · 시간 미정' }}</p>
-              <p v-if="task.description">{{ task.description }}</p>
-            </div>
-            <div class="actions"><button :disabled="busy || conflict" @click="startEdit(task)">작업 수정</button>
-              <button class="danger" :disabled="busy || conflict" @click="patch({ tasks: [{ op: 'delete', task_id: task.id }] })">작업 삭제</button></div>
-          </li>
-        </ul>
+        <div v-else class="task-days">
+          <section v-for="[date, tasks] in taskGroups" :key="date" class="task-day">
+            <h4><time :datetime="date">{{ dayLabel(date) }}</time></h4>
+            <ol class="task-list">
+              <li v-for="task in tasks" :key="task.id" :class="{ 'task-overlap': overlappingTasks.has(task.id) }">
+                <div class="task-info">
+                  <div class="task-title">
+                    <strong>{{ task.title }}</strong>
+                    <span :class="['chip', task.status.toLowerCase()]">{{ statuses[task.status] }}</span>
+                    <span v-if="overlappingTasks.has(task.id)" class="chip unknown">시간 확인 필요</span>
+                  </div>
+                  <p>{{ task.scheduled_start_at ? clockTime(task.scheduled_start_at) + ' ~ ' + clockTime(task.scheduled_end_at) + ' KST' : '시간 미정' }}</p>
+                  <p v-if="task.description">{{ task.description }}</p>
+                </div>
+                <div class="actions task-actions">
+                  <button :aria-label="'작업 수정: ' + task.title" :disabled="busy || conflict" @click="startEdit(task)">수정</button>
+                  <button class="danger" :aria-label="'작업 삭제: ' + task.title" :disabled="busy || conflict" @click="patch({ tasks: [{ op: 'delete', task_id: task.id }] })">삭제</button>
+                </div>
+              </li>
+            </ol>
+          </section>
+        </div>
         <form v-if="editing" class="stack task-edit" @submit.prevent="updateTask">
-          <h3>{{ editing.id ? '작업 수정' : '작업 추가' }}</h3>
+          <h3 ref="taskTitle" tabindex="-1">{{ editing.id ? '작업 수정' : '작업 추가' }}</h3>
           <TaskFields :task="editing.task" id-prefix="edit-task" />
           <div class="actions"><button class="primary" :disabled="busy || conflict">작업 저장</button><button type="button" @click="editing = null">취소</button></div>
         </form>
         <section v-if="detail.sources.length || detail.evaluations.length" class="plan-evidence">
           <h3>출처와 판정</h3>
           <ul><li v-for="source in detail.sources" :key="source.id">
-            <a v-if="source.source_url?.startsWith('https://')" :href="source.source_url" target="_blank" rel="noopener noreferrer">{{ source.provider }}</a>
-            <span v-else>{{ source.provider }}</span> <small v-if="source.caveat"> · {{ source.caveat }}</small>
+            <a v-if="source.source_url?.startsWith('https://')" :href="source.source_url" target="_blank" rel="noopener noreferrer">{{ providers[source.provider] ?? source.provider }}</a>
+            <span v-else>{{ providers[source.provider] ?? source.provider }}</span> <small v-if="source.caveat"> · {{ source.caveat }}</small>
           </li></ul>
           <ul class="checks"><li v-for="item in detail.evaluations" :key="item.id">
             <span>{{ rules[item.rule_code] ?? item.rule_code }}</span>
-            <span :class="['chip', item.status.toLowerCase()]">{{ item.status === 'UNKNOWN' ? 'UNKNOWN' : statuses[item.status] }}</span>
+            <span :class="['chip', item.status.toLowerCase()]">{{ statuses[item.status] ?? item.status }}</span>
           </li></ul>
         </section>
       </template>
-      <p v-else-if="!detailLoading && !error" class="empty">왼쪽 목록에서 계획을 선택하거나 새 계획을 만들어 주세요.</p>
+      <div v-else-if="!detailLoading && !error" class="empty detail-empty">
+        <span class="mini-icon"><UiIcon name="home" /></span>
+        <h2>준비할 계획을 선택해 주세요</h2>
+        <p>저장한 계획을 열면 예산과 작업 일정을 볼 수 있어요.</p>
+        <RouterLink class="text-link" to="/">AI 플래너에서 시작하기 <span aria-hidden="true">↗</span></RouterLink>
+      </div>
     </section>
   </div>
 </template>

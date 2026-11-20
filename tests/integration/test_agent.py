@@ -116,6 +116,23 @@ def test_expensive_rent_replans_in_approved_area_only(tmp_path):
     assert all(args["contract_month"] == "202501" for tool, args in provider.calls if tool == RENT)
     assert result["user_constraints"].max_monthly_rent_krw == 600_000
     assert [e.status for e in result["constraint_results"] if e.rule_code == "HISTORICAL_RENT"] == ["FAIL", "PASS"]
+    assert "월세 상한 초과 1건" in result["assistant_message"]
+    assert "전문가의 조언을 대신하지 않습니다" in result["assistant_message"]
+
+
+def test_missing_preparation_and_cost_values_keep_unknown(tmp_path):
+    plan = create_plan(planning_start_date=None, max_maintenance_fee_krw=100_000)
+    plan.evidence["max_maintenance_fee_krw"] = "관리비 10만원"
+    text = BASE.replace("준비 시작일 2026-11-20, ", "") + " 관리비 10만원."
+    with open_agent(tmp_path / "memory.sqlite3", planner=Planner(plan), run_tool=Provider()) as agent:
+        result = agent.run(agent.new_session_id(), text)
+    checks = {check.rule_code: check for check in result["constraint_results"]}
+    assert result["user_constraints"].planning_start_date is None
+    assert checks["PLAN_TIMELINE"].status == "UNKNOWN" and "2026-11-24" in checks["PLAN_TIMELINE"].caveat
+    assert checks["HISTORICAL_RENT"].observed_value == 500_000
+    assert checks["HISTORICAL_RENT"].expected_value == 600_000
+    assert checks["MAINTENANCE_FEE"].observed_value is None
+    assert "100,000원 이하" in result["assistant_message"]
 
 
 def test_expensive_alternatives_stop_at_three_replans(tmp_path):

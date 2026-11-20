@@ -2,7 +2,7 @@
 
 - 작성일: 2026-11-20 KST
 - 구현 및 통합 검증: **F3018·F3019 PASS**
-- GMS 실제 연결: **BLOCKED — HTTP 429**. Chrome 통합 검증에서는 GMS와 외부 제공자를 합성 응답으로 대체했다. Vue, FastAPI, LangGraph, 세션·계획·로그 SQLite는 실제 실행했다.
+- 최신 GMS 실제 연결·Agent E2E·Vue 연동은 **HTTP 200으로 확인**했다. 초기 HTTP 429 진단과 Mock 시연 기록은 해당 절에 보존했다.
 
 ## 구현
 
@@ -172,3 +172,112 @@ Chrome에서는 README의 Mock 시연 요청으로 재계획 1회, 월세 미충
 | SSAFY 오후 공식 셀프 체크리스트 | 확인 대기. 저장소와 제공된 첨부에서 해당 문서를 확인하지 못했다. |
 
 Day 3 커밋 대상은 변경·신규 파일 14개다. Git 인덱스 전체 82개 파일의 경로와 내용을 검사했다. 실제 환경변수 비밀값과 인코딩 변형, 토큰 패턴 및 제외 대상 경로가 검출되지 않았다. 새 증거에는 Mock 스크린샷과 비식별 로그를 포함했고 실제 요청의 원본 응답은 추가하지 않았다.
+
+## 프론트엔드 UI/UX 고도화
+
+Claude Code의 `frontend-design`과 Vercel v0 실행·연결이 현재 환경에서 확인되지 않아 Codex로 기존 Vue 3 화면을 개선했다. 크림과 딥 그린을 기본으로 하고 민트와 코럴을 상태와 동작의 강조에 사용했다. 카드, 버튼, 입력, 상태 표시, 키보드 포커스와 반응형 간격을 공통 스타일로 적용했다.
+
+| 화면 | 개선 사항 |
+|---|---|
+| AI 플래너 | 사용자와 AI 메시지, 처리 중·일부 확인·실패 상태를 구분했다. 기존 응답의 확정 조건으로 보증금·월세·준비 기간을 표시하고, 서버가 남긴 근거와 출처를 연결했다. 과거 거래와 현재 매물 UNKNOWN을 구분하고 초안 저장 동작을 강조했다. |
+| 내 계획 | 저장한 계획을 예산과 준비 일정이 있는 상세 화면으로 연결했다. 작업을 날짜와 시간순으로 그룹화하고 완료 수와 진행률을 표시했다. 미정 시간은 그대로 표시하며 중복 경고와 작업 편집의 키보드 포커스를 개선했다. |
+| 실행 기록 | 주요 작업과 전체 이벤트를 전환할 수 있다. 조회 성공·실패, 대안 탐색과 소요 시간을 표시했다. F3020의 이상 징후·원인 분류는 일반 오류와 구분하며 근거가 부족하면 판정 불가를 표시한다. |
+
+### 실행 검증
+
+- Chrome 데스크톱 1440px와 모바일 390px에서 세 화면을 검토했다. 모바일 가로 넘침 없이 메뉴·카드·타임라인이 표시됐고 Tab 포커스와 작업 편집 제목으로의 포커스 이동을 확인했다.
+- 기존 Vue·FastAPI·LangGraph·임시 SQLite의 Mock 흐름에서 세션 생성, 독립 계획과 출처 표시, 월세만 변경, 계획 저장·조회·삭제, 작업 추가·수정·삭제, 일정 중복 경고, 실행 기록 조회·삭제, 전체 이벤트 40개 전환, 호출 제한 안내를 검증했다.
+- 임시 Mock Workflow에서 이상 판정을 저장해 실행 화면의 계획 외 조회와 원인 분류를 확인했다. 별도 호출 제한 요청에서는 일반 오류와 판정 불가가 표시됐다. 이번 브라우저 검증은 Mock GMS와 합성 데이터만 사용했다. 이전 실제 연동 검증과 화면 증거는 보존했다.
+
+| 명령 | 결과 |
+|---|---|
+| `.venv/Scripts/python -m pytest -q` | 77개 통과, 종료 0 |
+| `npm.cmd --prefix frontend test` | 6개 통과, 종료 0 |
+| `npm.cmd --prefix frontend run build` | Vue 프로덕션 빌드 성공, 종료 0 |
+
+수정한 파일은 `frontend/index.html`, `frontend/src/App.vue`, `frontend/src/main.js`, `frontend/src/style.css`, `frontend/src/format.js`, `frontend/src/components/Timeline.vue`, `frontend/src/views/Chat.vue`·`Plans.vue`·`Logs.vue` 및 이 보고서다. 당시 추가한 `frontend/src/assets/planner-hero.jpg`는 기본 ImageGen으로 생성하고 JPEG로 최적화했다. 현재 화면은 후속 리뉴얼의 [달빛 작업실 이미지](../frontend/src/assets/midnight-study.jpg)를 사용한다. 당시 이미지 생성에는 아래의 텍스트만 사용했다.
+
+```text
+Use case: photorealistic-natural. Generate a premium Korean editorial lifestyle photograph for the right half of Youth Kitty Planner’s web app hero. Wide landscape crop, interior shelf-level viewpoint. A single small real ginger tabby cat is sleeping curled on a cream linen cushion with its face visible, grouped in the far right with a closed muted mint notebook and one coral ribbon bookmark nearby. Soft matte warm beige wall and an afternoon window shadow; left half is nearly empty beige wall gradually going into shadow for a webpage overlay. Stylistically serene Seoul apartment lifestyle editorial, thoughtful quiet first-home atmosphere, fine fabric and fur, warm off-white, soft beige, small mint and coral notes. Place the cat and main photographic affordance right-of-center, away from the very edge to allow cropping. No human, no writing, no lines of text, no watermark, no logo, no cartoon. Composition must look good as a 2:1 crop.
+```
+
+## Dreamy Retro Anime UI 리뉴얼
+
+첨부 레퍼런스 5장의 보라·분홍 하늘, 빗속 조명, 셀 애니메이션 질감, 고양이의 작업 공간과 픽셀 장식을 반영했다. ImageGen으로 제작한 [달빛 작업실 배너](../frontend/src/assets/midnight-study.jpg)를 AI 플래너에 적용했다. 픽셀 고양이와 별은 로고, 선택 메뉴, 빈 화면과 처리 상태에 사용했다.
+
+- `frontend/src/App.vue`와 `frontend/index.html`에 반투명 상단 메뉴, 본문 건너뛰기, 밤바탕 브라우저 색을 적용했다.
+- `frontend/src/style.css`에서 자정 보라·라벤더·핑크·크림 토큰과 입력·카드·버튼·상태 스타일을 정의했다. 별, 구름, 페이지 전환과 버튼 반응은 모션 감소 설정을 존중한다.
+- `frontend/src/views/Chat.vue`에 배너를 적용하고 대화 시작 버튼을 기존 메시지 입력으로 연결했다. 내 계획과 실행 기록은 공통 스타일을 적용했다. Vue 라우트, API 계약과 서버 로직은 기존 그대로 사용한다.
+
+Chrome 1440px와 390px에서 채팅·계획·실행 기록을 검토했다. 실행 기록은 320px에서도 가로 넘침이 없었다. 키보드 본문 이동과 포커스, 스크롤 중 상단 메뉴 유지, 모션 감소 적용을 확인했다. 기본 카드 텍스트와 배경 대비를 측정한 값은 13.6:1이다. Mock 세션에서 채팅, 조건 변경, 출처, 계획과 작업 저장·수정·삭제, 중복 경고, 전체 이벤트 40건 전환, 로그 삭제와 호출 제한 안내를 확인했다. 백엔드 77개, 프론트엔드 6개 테스트와 Vue 프로덕션 빌드가 통과했다.
+
+기본 ImageGen에 첨부 이미지 5장과 다음 프롬프트를 사용했다.
+
+```text
+Generate a NEW 2:1 ultra-wide widescreen hero background artwork for a Korean planner web app, a very polished original hand-painted 1990s cel animation still of a cozy late-night study. All five attached images are mood references only: take lavender-pink clouds and bright small star glints from reference 1; inward quiet book and warm lamp with wet blue-purple quiet from 2; whimsical cat expressiveness and hand-painted outlines from 3; subtle analog film grain and deep violet cel shading from 4; quiet computer-desk work companion energy from 5. No copying any existing characters, faces, compositions, watermarks, marks, crescent forehead symbols, costumes or logos. The composition reads clearly and serenely: on the right two-thirds, an original tiny silvery lilac cat with a darker curled tail and lavender collar is sitting at a desk, both paws on open notebook, looking toward a warm yellow mushroom table lamp, a few books and an unobtrusive tiny vintage computer. Large arched window behind the cat on the right shows a crescent moon, lavender and pink low clouds, wet glass and a few stars. Cat head near x=74%, y=55%, moon near x=79%, y=22%; these remain readable in a wide crop. The LEFT 42% is quiet, near-solid deep midnight plum/indigo wall or evening shadow #1E1837 with very few tiny dim glints and absolutely no foreground objects, so white web typography can be added in HTML afterward. Be cinematic and editorial with cel-painted detail and clean contours. Selective warm highlights, muted pastel lavender and dreamy pink. Subtle film grain, enough crisp silhouette contrast, no excessive sparks, no photorealism, no text, no numbers, no watermarks, no typography, no black bars, no border.
+```
+
+## Midnight Lavender UI 마감
+
+기존 밤하늘 일러스트를 유지하고 어두운 색을 내비게이션과 히어로에 집중시켰다. 나머지 화면은 밝은 라벤더 배경과 오프화이트 표면을 사용한다. 본문 크기·행간, 여백, 카드와 입력창 모서리, 버튼 높이, 상태 색과 짧은 전환을 공통 토큰으로 정리했다. 정보 위계, 키보드 포커스와 터치 영역, 거리와 목적에 따른 모션 속도를 참고했다. [Linear](https://linear.app/now/behind-the-latest-design-refresh) · [Vercel Web Interface Guidelines](https://vercel.com/design/guidelines) · [Material Motion](https://m1.material.io/motion/duration-easing.html)
+
+- AI 플래너에 새 슬로건과 서브 카피를 적용했다. CTA와 세 시작 질문은 기존 입력창에 연결한다. 과거 메시지를 다시 재생하지 않고 새 메시지만 진입 효과를 적용한다. 화면이 줄어들면 입력창을 가시 영역으로 이동한다. 조건 카드는 예산·희망 지역·준비 기간을 나누며, 조회로 확인되지 않은 항목을 미확인으로 표시한다.
+- 내 계획은 날짜순 타임라인과 기존 CRUD를 사용한다. 중복 경고에 해당하는 작업에도 시간 확인 필요를 표시하며 미정 시간은 유지한다.
+- 실행 기록은 단계 완료·실패와 재계획을 아이콘 및 텍스트로 구분하고, 전체 이벤트의 세부 정보를 필요할 때 펼칠 수 있다. F3020 전용 카드와 일반 오류의 시각적 구분을 유지한다.
+
+Chrome 1280px·768px·390px에서 화면을 캡처하고 시각적으로 검수했다. 세 화면의 가로 넘침, 긴 메시지 줄바꿈, 태블릿 예산 숫자, 스크롤 중 헤더, 키보드 포커스, 44px 탐색·전송 조작부와 모션 감소를 점검했다. 390px에서 화면 높이를 470px로 줄여 입력창이 가시 영역에 남는 것을 확인했다. 기본 카드 본문과 보조 텍스트 대비는 각각 14.34:1, 6.38:1이고 기본 버튼은 6.78:1이다.
+
+Mock으로 세션, 시작 질문, 채팅·조건 변경·출처, 계획과 작업 CRUD, 중복 경고, 이벤트 40건과 상세 펼침, 로그 삭제와 호출 제한을 확인했다. 별도 합성 이벤트로 F3020 카드와 일반 호출 제한의 구분도 확인했다. 백엔드 77개·프론트엔드 6개 테스트와 Vue 프로덕션 빌드가 통과했다. 기존 실제 데이터 검증 이력은 위 기록에 보존했다.
+
+수정 파일은 `frontend/index.html`, `frontend/src/App.vue`, `frontend/src/style.css`, `frontend/src/views/Chat.vue`·`Plans.vue`·`Logs.vue`, `frontend/src/components/Timeline.vue`와 이 보고서다. 선형 아이콘 공유를 위해 `frontend/src/components/UiIcon.vue`를 추가했다.
+
+## SSAFY 공식 셀프 체크리스트 전수 점검
+
+작업 폴더에 제공된 [원본 셀프체크리스트](../셀프체크리스트.xlsx)의 1~32번을 G·H·I열에 기록했다. 원본 집계식의 결과는 통과 25, 실패 0, 미확인 3, 해당없음 4, 미기입 0이다. 증빙란 공란은 0건이며 미확인 세 항목은 최종 근거가 부족하다. 증빙 칸에서 이름만 적힌 JSON·JSONL·PNG는 `reports/evidence/`에 있다.
+
+| 번호 | 확인 방법 및 실행 근거 |
+|---|---|
+| 1~4 | Registry 실출력과 Tool 정의서의 3개 이름·설명·입력 DTO를 동등 비교했다. Tool 3종은 외부 API이며 세션·계획·로그 API는 별도 로컬 REST 경로다. Tool 3종의 실제 성공, 격리 키 누락·입력 오류, 표준 실패 DTO를 대조했다. 기준 미입력과 미래 계약월은 직전 완료 월 적용과 요청월·조회월 표시를 Mock으로 확인했다. 후보 ID·필지 전달, 결측 UNKNOWN, 장소 성공·결과 없음은 Provider 테스트 및 기존 실제 자료를 대조했다. [실제 Tool 증거](evidence/phase-01-live.jsonl) · [정의서](evidence/phase-01-tool-specs.json) |
+| 5~7 | `test_agent.py`의 입력 근거 대조와 미입력 보존을 검증했다. 컴파일된 그래프 8개 노드, 계획과 요청 순서, 일반 요청의 Tool 0회를 재실행 로그에 기록했다. 후보 ID·법정동 전달 및 표제부 실패 뒤 같은 세션의 후속 일반 대화 성공을 확인했다. |
+| 8~11 | 월세 확인값 500,000원과 상한 600,000원, 준비 종료일과 출근일 대조를 검증했다. 관리비를 모르면 확인값을 비우고 상한을 안내한다. 준비 시작일을 모르면 마감일에서 역산한 안전 기준을 표시하되 입력은 비워 둔다. `test_wider_search_reuses_region_resolution_in_same_run`에서 지역 결과 재사용, 세 번의 재계획 종료 및 월세만 변경하고 나머지를 보존하는 후속 요청을 확인했다. |
+| 12~13 | 승인 대안으로 추천이 나온 실행에서 추천·출처와 이전 후보의 월세 한도 초과 사유를 Chrome 답변으로 확인했다. 계약·금융 전문가 조언을 대신하지 않는다는 안내가 화면에 표시됐다. |
+| 14~18 | `test_api.py`에서 두 세션 로그 격리, 순번·단계·Tool 소요·의도 근거, 발행·DB 저장 payload 일치를 대조했다. 무구독·저장 실패에도 채팅이 동작했고 이벤트 수집·저장 자체는 LLM을 호출하지 않았다. 목록·상세·삭제와 상세 순서를 확인했고 OpenAPI의 로그 수정 경로 부재를 대조했다. |
+| 19~22 | 계획 저장·조회·겹침 경고와 화면의 생성 시각을 확인했다. Chrome에서 계획 제목을 바꿔 상세와 목록의 즉시 반영, 삭제 이후 목록 반영을 확인했다. FastAPI 8개 경로·DTO·Bearer를 검증했고 Chrome Network에서 채팅 200, 계획 201/200/204, 로그 200을 관찰했다. 조회 실패, 재계획, 처리 중 및 안전한 키 누락 안내를 확인했다. 로딩 캡처는 화면 상태 관찰용 네트워크 지연을 사용했다. [OpenAPI 화면](evidence/checklist-docs.png) · [처리 중](evidence/checklist-loading.png) · [인증 경고](evidence/checklist-api-key.png) |
+| 23~24 | 대표 시나리오 5건을 Mock으로 재실행했다. 아래 처리 시간을 포함해 각 최종 응답, 기대·실제 결과, 차이, 단계·Tool·재계획 전체 이벤트를 기록했다. 정상 25개·재계획 40개의 전체 로그를 포함한다. [실행 증거](evidence/day-03-scenarios.json) |
+| 25 | `.env` 제외 제출 후보 88개를 실제 비밀값·인코딩 변형 및 알려진 토큰 패턴과 대조해 검출 0건이었다. 오류 화면의 일반화된 메시지와 로그의 원본 오류 미노출도 확인했다. |
+| 26~27 | Vue·FastAPI·Agent·Tool 분리, 공개 이용 조건, 설계서·API·Tool 정의·소스·로그·시나리오·화면·README·공식 체크리스트 존재를 확인했다. 계정 승인·쿼터와 팀 공식 기획 검증 증거가 각각 필요하다. [공개 이용 조건과 승인 확인 범위](phase-01.md) |
+| 28 | 반복 호출·재계획 상한 초과·계획 외 Tool·증거 부족을 Mock으로 재검증했다. 필수 경로는 기존 답변과 로그를 만들고 정상·판정 불가에서 진단을 호출하지 않는다. F3020 이상 경로는 판정과 원인 분석을 종료 이벤트에 구분해 기록하며 Main Agent 경고로 연결한다. 기존 실제 GMS `WORKFLOW_DISPATCH` 진단은 앞 절에 있다. |
+| 29~32 | 선택 범위 F3020에 포함되지 않는 F3021~F3023으로 해당없음. |
+
+대표 요청의 전체 Mock HTTP 시간은 최초 충족 150ms, 재계획 274ms, 상한 도달 445ms, Tool 실패 168ms, 일반 대화 65ms였다. 이 정도면 로컬 Mock 시연의 응답 대기는 짧다. 이전 실제 GMS 경로는 별도로 브라우저 표시까지 13.7초였고 한 요청 유형만 관측했다. 운영 시나리오 전반에서의 대기가 사용자에게 적합한지 판단할 근거가 부족해 23번을 미확인으로 유지했다. 이번 점검의 GMS·외부 API 실호출은 0회였다.
+
+최종 회귀는 `python -m pytest -q` 79개 통과, `npm.cmd --prefix frontend test` 6개 통과, `npm.cmd --prefix frontend run build` 성공이다. 세 명령의 종료 코드는 0이다.
+
+## 제출 전 23·26·27번 추가 검증
+
+### 23번 · 실제 브라우저 대기
+
+2026-11-20 KST에 실제 GMS, 외부 API, Chrome, FastAPI와 임시 SQLite로 다음 요청을 실행했다. 신규 계획·후속 요청은 동일 세션에서 진행했고 재계획 요청은 0원 상한을 사용한 별도 경계 사례다. GMS 9회와 외부 API 10회는 모두 HTTP 200이었다. 이 결과는 기존 실제 Agent E2E 및 Vue 저장·재조회 성공 기록에 추가한다. [측정 데이터](evidence/day-03-scenarios.json)
+
+| 요청 | 결과 | 로딩 표시 | 최종 화면 표시 | 서버 실행 |
+|---|---|---:|---:|---:|
+| 신규 독립 계획 | PARTIAL, Tool 3종 성공, 초안 표시 | 4ms | 13,034ms | 13,000ms |
+| 월세만 변경 | SUCCEEDED, 다른 조건 유지, 초안 표시 | 3ms | 7,510ms | 7,484ms |
+| 예산 상한 미충족 | EXHAUSTED, 재계획 3회 후 종료, 초안 표시 | 5ms | 19,315ms | 19,281ms |
+
+브라우저 검수에서는 모든 요청에서 즉시 처리 중 상태가 보이고 응답과 함께 해제되어 요청의 진행 여부를 알 수 있었다. 재계획에서는 최종 결과까지 약 19.3초를 기다렸고, 그동안 현재 단계를 구분할 수 없었다. 실제 대상 사용자가 이 대기를 받아들일 수준인지 확인한 피드백은 없다. 자체 SLA 없이 23번은 미확인으로 유지한다. Mock 5건의 65~445ms와 이전 실연동의 11.3~13.7초는 별도 기록이며 이 표와 평균하지 않았다.
+
+### 26번 · 이용 조건과 적용 한도
+
+코드에서 Vue, FastAPI, Agent, Tool이 분리됨을 확인했다. 실제 API 호출은 횟수를 제한한 검증 범위에서 성공했으며, 앱의 제공자 호출은 인증된 서버에서만 수행하고 주소·과거 임대차·건축물 표제부 용도에 사용한다. 최신 공개 문서와 Phase 1에서 기록한 공개량, 계정 관리 화면 확인 위치를 [README](../README.md)에 직접 추가했다. 공개 조건과 샘플 HTTP 200으로 계정별 승인·이용 기간·적용 쿼터와 누적 사용을 확정할 수 없어 26번은 미확인이다.
+
+### 27번 · 제출 자료와 공식 기획 검증
+
+공식 요구사항 원본, 설계·REST 명세, Tool 정의, 구현 소스, 대표 요청 5건과 전체 실행 로그, 재계획 사례, 화면, README 및 체크리스트 파일을 확인했다. F3001~F3019 구현은 Mock 회귀와 실연동 기록을 구분했다. F3020은 필수 경로의 결과·로그를 유지하면서 이상 판정에서만 원인 진단을 덧붙인다. 외부 API의 실제 호출과 DTO 대조, GMS Tool Calling, 설계 시험 근거 및 시각 출처는 [기획 검증 근거 대조](phase-01.md#제출용-기획-검증-근거-대조)에 보완했다. 팀 공식 1일 차 날짜와 구현 전·16시까지의 검증 자료는 로컬 증거와 Git 기록에서 확인되지 않아 27번은 미확인이다.
+
+### 증빙 교체와 최종 집계
+
+- 1번은 공식 요구서의 필수 구현 범위가 외부 API Tool임을 확인했다. 외부 Registry 3종과 별도 로컬 서비스 REST 경로를 명확히 구분했다.
+- 8번과 13번은 기존 키 오류 화면에서 [제약값·역산과 계약·금융 전문가 안내를 직접 표시한 Chrome Mock 화면](evidence/checklist-judgment.png)으로 증빙을 교체했다.
+- 공식 원본 32개 항목은 통과 25, 실패 0, 미확인 3, 해당없음 4, 미기입 0이다. 필수 24/27이며 선택 심화 F3020은 통과했다.
+- 백엔드 pytest 79개, 프론트엔드 6개, Vue 프로덕션 빌드 모두 통과했다. 이번 작업은 실행 검증과 제출 증빙 보완이며 테스트 코드의 추가는 없다.

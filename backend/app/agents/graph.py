@@ -190,6 +190,8 @@ def build_graph(planner, run_tool):
         warnings = [HISTORICAL, NOTICE]
         if current and current.ok:
             warnings.append(f"조회 기준 계약월 {current.data.effective_period}. 신고·공개 시차와 조회 한도가 적용됩니다.")
+            if current.data.requested_period and current.data.requested_period != current.data.effective_period:
+                warnings.append(f"요청한 계약월 {current.data.requested_period} 대신 {current.data.effective_period}을 조회했습니다.")
         if any(check.status != "PASS" for check in evaluations if check.rule_code == "PLAN_TIMELINE"):
             warnings.append("준비 기간과 출근일을 함께 확인하고, 일정이 겹치면 사용자에게 조정을 요청합니다.")
         warnings.extend(check.caveat for check in evaluations if check.status == "UNKNOWN"
@@ -443,12 +445,20 @@ def _generate_response(state):
         answer = f"조회 범위에서 조건에 맞는 과거 거래 사례를 확인하지 못했습니다. {reason} 다른 지역이나 조회 범위를 지정해 주세요."
     else:
         answer = "조회한 결과는 유지했으나 일부 정보를 확인하지 못했습니다."
-    if status == "EXHAUSTED":
-        fields = {"HISTORICAL_RENT": "월세", "HISTORICAL_DEPOSIT": "보증금"}
-        exceeded = {fields[check.rule_code] for check in state["constraint_results"]
-                    if check.rule_code in fields and check.status == "FAIL"}
-        if exceeded:
-            answer += " 일부 사례는 " + ", ".join(sorted(exceeded)) + " 상한을 초과했습니다."
+    fields = {"HISTORICAL_RENT": "월세", "HISTORICAL_DEPOSIT": "보증금"}
+    excluded = {}
+    for step in state["workflow_steps"]:
+        result = state["tool_results"].get(step.step_id)
+        if step.tool_name != RENT or not result or not result.ok or result.meta.is_cached:
+            continue
+        for rental in result.data.candidates:
+            reasons = tuple(fields[check.rule_code] for check in rental_evaluations(rental, state["user_constraints"])
+                            if check.status == "FAIL")
+            if reasons:
+                excluded.setdefault(reasons, set()).add(rental.candidate_id)
+    if excluded:
+        counts = [f"{'·'.join(reasons)} 상한 초과 {len(ids)}건" for reasons, ids in excluded.items()]
+        answer += " 추천에서 제외한 과거 거래는 " + ", ".join(counts) + "입니다."
     if any(check.status == "FAIL" and check.rule_code == "PLAN_TIMELINE" for check in state["constraint_results"]):
         answer += " 준비 기간이 출근일 전에 끝나지 않습니다. 날짜 또는 기간을 확인해 주세요."
     if state.get("sources"):

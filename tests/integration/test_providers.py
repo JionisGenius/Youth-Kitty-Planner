@@ -108,7 +108,8 @@ def test_safe_errors(monkeypatch, status, code):
     assert "synthetic-secret" not in result.model_dump_json()
 
 
-def test_default_month_and_empty_result(monkeypatch):
+@pytest.mark.parametrize("requested", [None, "999901"])
+def test_default_month_and_empty_result(monkeypatch, requested):
     with requests.Session() as session:
         def get(url, *, params, **kwargs):
             prior = datetime.now(KST).date().replace(day=1) - timedelta(days=1)
@@ -116,9 +117,11 @@ def test_default_month_and_empty_result(monkeypatch):
             return reply(government([]))
 
         monkeypatch.setattr(session, "get", get)
-        result = execute_tool("search_rental_transactions", {"sigungu_code": "11110"},
+        result = execute_tool("search_rental_transactions", {"sigungu_code": "11110", "contract_month": requested},
                               session=session, keys=KEYS)
-    assert result.ok and result.data.count == 0 and result.data.requested_period is None
+    assert result.ok and result.data.count == 0 and result.data.requested_period == requested
+    assert result.data.effective_period != "999901"
+    assert any("999901" in caveat for caveat in result.meta.caveats) == bool(requested)
 
 
 def test_wrong_district_fails(monkeypatch):

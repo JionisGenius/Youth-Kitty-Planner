@@ -432,7 +432,8 @@ def test_unexpected_provider_exception_is_sanitized_and_partial(tmp_path):
                 raise RuntimeError("private-provider-response")
             return super().__call__(tool, args)
 
-    with open_client(tmp_path, planner=Planner(create_plan()), run_tool=BrokenProvider()) as client:
+    with open_client(tmp_path, planner=Planner(create_plan(), Analysis(intent="GENERAL")),
+                     run_tool=BrokenProvider()) as client:
         headers = auth(client)
         result = chat(client, headers)
         assert result["status"] == "PARTIAL" and result["draft_plan"]
@@ -440,3 +441,5 @@ def test_unexpected_provider_exception_is_sanitized_and_partial(tmp_path):
         assert events.status_code == 200 and "private-provider-response" not in events.text
         failure = next(e for e in events.json() if e["event_type"] == "TOOL_FAILED")
         assert failure["payload"]["code"] == "UNKNOWN_ERROR"
+        following = chat(client, headers, "안녕하세요")
+        assert following["status"] == "SUCCEEDED" and following["tool_summaries"] == []

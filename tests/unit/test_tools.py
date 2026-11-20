@@ -15,8 +15,16 @@ def test_registry_contract_and_missing_key():
         response = execute_tool(name, {}, session=None, keys={})
         assert not response.ok and response.error.code == "INVALID_ARGUMENT"
         assert TypeAdapter(tool_result_type(spec.output_model)).validate_json(response.model_dump_json()) == response
-    result = execute_tool("search_rental_transactions", {"sigungu_code": "11110"}, session=None, keys={})
-    assert result.error.details == {"reason": "missing_api_key"}
+    valid = {
+        "search_location": {"query": "광화문역", "mode": "KEYWORD"},
+        "search_rental_transactions": {"sigungu_code": "11110"},
+        "get_building_detail": {"candidate_id": "fixture", "sigungu_code": "11110",
+                                "bjdong_code": "10100", "parcel_type": "0", "bun": "0012", "ji": "0000"},
+    }
+    for name, args in valid.items():
+        result = execute_tool(name, args, session=None, keys={})
+        assert not result.ok and result.error.code == "AUTH_FAILED"
+        assert result.error.details == {"reason": "missing_api_key"}
 
 
 def test_registry_specs_are_accepted_by_langchain():
