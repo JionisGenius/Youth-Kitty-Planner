@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+import hmac
 import logging
+import secrets
 from time import monotonic
 from typing import Literal
 from uuid import UUID, uuid4
@@ -45,6 +47,10 @@ class RunEvents:
     run_id: UUID
     session_id: UUID
     sequence: int = field(default=0, init=False)
+    _fingerprint_key: bytes = field(default_factory=lambda: secrets.token_bytes(32), init=False, repr=False)
+
+    def fingerprint(self, canonical_arguments: str) -> str:
+        return hmac.digest(self._fingerprint_key, canonical_arguments.encode("utf-8"), "sha256").hex()
 
     def emit(self, event_type, *, node=None, start=None, **payload):
         # Callers construct payloads from allowlisted summaries, never requests or tool data.

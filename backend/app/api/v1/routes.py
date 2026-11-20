@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Request, Response
 
+from ...agents.state import RunAssessment
 from ...core.errors import ApiProblem, not_found
 from ...db.repositories import plans, runs
 from ...db.repositories.sessions import create_session
@@ -46,19 +47,21 @@ def chat(request: Request, data: ChatRequest, session: CurrentSession):
         reply = _chat_response(result, aliases)
     except Exception:
         runs.finish_run(services.database, session.id, run_id, status="FAILED", error="UNKNOWN_ERROR")
-        events.emit("RUN_FAILED", start=started, status="FAILED", code="UNKNOWN_ERROR")
+        events.emit("RUN_FAILED", start=started, status="FAILED", code="UNKNOWN_ERROR",
+                    anomaly=RunAssessment().payload())
         raise ApiProblem(500, "UNKNOWN_ERROR", "요청을 처리하지 못했습니다.",
                          details={"run_id": str(run_id)}) from None
 
     error = result["errors"][-1].code if result["errors"] else None
+    anomaly = result.get("run_assessment", RunAssessment()).payload()
     runs.finish_run(services.database, session.id, run_id, status=reply.status, intent=reply.intent,
                     replan_count=reply.replan_count, error=error)
     if reply.status == "FAILED":
-        events.emit("RUN_FAILED", start=started, status=reply.status, code=error or "UNKNOWN_ERROR")
+        events.emit("RUN_FAILED", start=started, status=reply.status, code=error or "UNKNOWN_ERROR", anomaly=anomaly)
         raise ApiProblem(502, error or "UNKNOWN_ERROR", "대화 실행을 완료하지 못했습니다.",
                          details={"run_id": str(run_id)})
     events.emit("RUN_FINISHED", start=started, status=reply.status, replan_count=reply.replan_count,
-                evidence=evidence)
+                evidence=evidence, anomaly=anomaly)
     return reply
 
 

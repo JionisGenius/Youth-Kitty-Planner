@@ -6,6 +6,8 @@ import requests
 from ..core.gms import GmsConfigurationError, load_gms_config, request, responses_tools, text_parts, validate_call
 from ..schemas.agent import Analysis, UserConstraints
 
+DIAGNOSIS_CAUSES = ("EXECUTION_DEDUPLICATION", "REPLAN_CONTROL", "WORKFLOW_DISPATCH", "INSUFFICIENT_CONTEXT")
+
 
 class PlannerError(Exception):
     def __init__(self, code):
@@ -32,6 +34,30 @@ class GmsPlanner:
                 code = "SCHEMA_MISMATCH"
             raise PlannerError(code)
         return items
+
+    def diagnose_anomaly(self, rule_codes: tuple[str, ...]) -> str:
+        prompt = (
+            "Classify the likely cause of the confirmed YKP workflow anomaly using these rule codes. "
+            "Use INSUFFICIENT_CONTEXT if the codes do not support a likely cause. "
+            f"Rule codes: {json.dumps(rule_codes)}"
+        )
+        items = self._request(prompt, text_format={
+            "type": "json_schema", "name": "ykp_anomaly_cause", "strict": True,
+            "schema": {
+                "type": "object", "additionalProperties": False, "required": ["cause"],
+                "properties": {"cause": {"type": "string", "enum": list(DIAGNOSIS_CAUSES)}},
+            },
+        })
+        parts = text_parts(items)
+        if len(parts) == 1:
+            try:
+                decoded = json.loads(parts[0])
+            except ValueError:
+                pass
+            else:
+                if isinstance(decoded, dict) and decoded.keys() == {"cause"} and decoded["cause"] in DIAGNOSIS_CAUSES:
+                    return decoded["cause"]
+        raise PlannerError("SCHEMA_MISMATCH")
 
     def analyze(self, message: str, prior: UserConstraints) -> Analysis:
         prior_fields = sorted(prior.fixed_fields)

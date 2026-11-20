@@ -30,6 +30,9 @@ npm.cmd --prefix frontend run dev
 - FastAPI·Pydantic REST API와 Bearer 세션 인증
 - LangGraph와 SSAFY GMS Responses를 이용한 의도 분석 및 조회 계획, 예산·기간 검증과 최대 3회 재계획
 - SQLite의 세션별 대화 조건, 계획·작업, 실행 이벤트 저장. 시간이 겹치는 일정은 저장하고 경고 표시
+- F3020 실행 이상 징후 판단. 동일 Tool·인자 중복, 재계획 상한 초과, 계획 외 Tool, 계획·실행 불일치를 기록하고 이상 실행만 GMS로 진단
+
+F3020은 일반 서버 실행에 포함됩니다. 실행 이벤트 조회 응답의 마지막 이벤트에서 `payload.anomaly`로 판정과 근거를 확인할 수 있습니다. 증거가 부족하면 `UNKNOWN`을 기록하고 원인 진단을 호출하지 않습니다.
 
 ## Mock 시연
 
@@ -55,4 +58,21 @@ npm.cmd --prefix frontend test
 npm.cmd --prefix frontend run build
 ```
 
+F3020 회귀 테스트만 실행하려면 `.venv/Scripts/python -m pytest -q tests/integration/test_api.py -k "anomaly_assessment or tool_argument_fingerprints"`를 사용합니다. 합성 이벤트와 Mock GMS로 판정, 호출 분기, HTTP 429 회귀를 검증합니다.
+
+기존 `.env`를 사용해 실제 GMS 연결을 한 번 확인하는 명령은 다음과 같습니다.
+
+```powershell
+.venv/Scripts/python -m scripts.verify_gms_preflight --single-request
+```
+
+2026-11-20 실제 재검증에서 GMS Responses API가 HTTP 200을 반환했고 `gpt-6.1-sol`이 일치했습니다. Tool 3종의 이름·인자 검증, Vue의 실제 계획 응답·저장·재조회·실행 로그, 합성 이상 이벤트 1건의 실제 GMS 원인 진단을 확인했습니다. 이전 HTTP 429는 [보고서](reports/phase-04.md)에 보존했습니다. 대표 요청의 브라우저 응답 표시는 13.7초였으며 일반 이용 환경의 응답 적합성(NF3005)과 계정별 외부 API 승인·쿼터(NF3007)는 확인 대기입니다.
+
 대외비 표시가 있는 공식 요구사항 PDF는 저장소에 포함하지 않습니다. 해당 원본은 제공받은 로컬 사본을 사용합니다.
+
+## 제출 자료
+
+- [요구사항 추적·Agent 설계·REST API 계약](YKP_codex_handoff_v1/docs/ARCHITECTURE_AND_SCHEMA_v1.md)과 [Tool 입출력 명세](reports/evidence/phase-01-tool-specs.json). 로컬 서버가 실행 중이면 [Swagger UI](http://127.0.0.1:8000/docs)와 [OpenAPI JSON](http://127.0.0.1:8000/openapi.json)을 확인할 수 있습니다.
+- [필수 기능 및 Day 3 검증 결과](reports/phase-04.md), [대표 요청 5개의 최종 응답과 전체 로그](reports/evidence/day-03-scenarios.json), Mock 시연 화면 [대화](reports/evidence/day-03-mock-chat.png) · [실행 타임라인](reports/evidence/day-03-mock-timeline.png)
+
+제출용 대표 요청 5건과 스크린샷은 Mock GMS 및 합성 외부 데이터로 제작했습니다. 실제 GMS와 실제 외부 데이터로 수행한 대표 요청의 결과는 [Phase 4 보고서](reports/phase-04.md)에 별도로 기록했습니다.

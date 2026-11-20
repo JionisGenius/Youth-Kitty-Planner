@@ -1,0 +1,3341 @@
+{
+  "verified_at_kst": "2026-11-20T10:17:32+09:00",
+  "system": "FastAPI TestClient + LangGraph + SQLite + Logging Agent",
+  "inputs": "Mock GMS and Mock external providers; no external HTTP",
+  "redaction": "Event/session/run IDs replaced with aliases; private evidence scope removed.",
+  "scenarios": [
+    {
+      "scenario": "first_pass",
+      "synthetic_request": "서울 종로구(11110) 희망, 보증금 3000만원, 월세 60만원. 2025년 1월 거래. 준비 시작일 2026-11-20, 준비 기간 7일, 출근일 2026-12-01.",
+      "expected": {
+        "chat_status": "SUCCEEDED",
+        "replans": 0,
+        "rent_evaluations": [
+          "PASS"
+        ],
+        "tool_calls": 3,
+        "tool_failures": 0,
+        "anomaly": "NORMAL"
+      },
+      "actual": {
+        "chat_status": "SUCCEEDED",
+        "replans": 0,
+        "rent_evaluations": [
+          "PASS"
+        ],
+        "tool_calls": 3,
+        "tool_failures": 0,
+        "anomaly": "NORMAL"
+      },
+      "differences": [],
+      "final_response": "예시빌라의 과거 계약 사례를 확인했습니다. 보증금 20,000,000원, 월세 500,000원. 건축물대장 표제부와 건물 수준에서 일치했습니다 (주용도 주택). 출처는 국토교통부 전월세 실거래, 카카오 로컬, 국토교통부 건축HUB입니다. 신고된 과거 전월세 계약 사례이며 현재 임대할 수 있는 매물인지는 확인되지 않았습니다. 이 계획은 계약·금융 전문가의 조언을 대신하지 않습니다. 조회 기준 계약월 202501. 신고·공개 시차와 조회 한도가 적용됩니다.",
+      "events": [
+        {
+          "event_id": "first_pass-event-1",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 1,
+          "timestamp": "2026-11-20T01:17:30.067590Z",
+          "event_type": "RUN_STARTED",
+          "node_name": null,
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-2",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 2,
+          "timestamp": "2026-11-20T01:17:30.098831Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "analyze_request",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-3",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 3,
+          "timestamp": "2026-11-20T01:17:30.109731Z",
+          "event_type": "INTENT_DECIDED",
+          "node_name": "analyze_request",
+          "duration_ms": null,
+          "payload": {
+            "intent": "CREATE_PLAN",
+            "reason_summary": "독립 준비 일정과 주거 조건을 조합하는 계획 요청으로 분류했습니다."
+          },
+          "reason_summary": "독립 준비 일정과 주거 조건을 조합하는 계획 요청으로 분류했습니다."
+        },
+        {
+          "event_id": "first_pass-event-4",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 4,
+          "timestamp": "2026-11-20T01:17:30.115733Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "analyze_request",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-5",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 5,
+          "timestamp": "2026-11-20T01:17:30.122777Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "validate_input",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-6",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 6,
+          "timestamp": "2026-11-20T01:17:30.161433Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "validate_input",
+          "duration_ms": 31,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-7",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 7,
+          "timestamp": "2026-11-20T01:17:30.318446Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-8",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 8,
+          "timestamp": "2026-11-20T01:17:30.332056Z",
+          "event_type": "WORKFLOW_CREATED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {
+            "steps": [
+              {
+                "step_id": "r0-rent",
+                "tool_name": "search_rental_transactions",
+                "depends_on": []
+              },
+              {
+                "step_id": "r0-parcel",
+                "tool_name": "search_location",
+                "depends_on": [
+                  "r0-rent"
+                ]
+              },
+              {
+                "step_id": "r0-title",
+                "tool_name": "get_building_detail",
+                "depends_on": [
+                  "r0-rent",
+                  "r0-parcel"
+                ]
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-9",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 9,
+          "timestamp": "2026-11-20T01:17:30.338565Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "plan_workflow",
+          "duration_ms": 31,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-10",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 10,
+          "timestamp": "2026-11-20T01:17:30.345578Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-11",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 11,
+          "timestamp": "2026-11-20T01:17:30.353088Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r0-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false,
+            "argument_fingerprint": "10f8cff86b5f2aad6e26a42c6fa2f8da8df65ba60f8644a8cafc466ddd894a03"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-12",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 12,
+          "timestamp": "2026-11-20T01:17:30.366600Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 0,
+          "payload": {
+            "step_id": "r0-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-13",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 13,
+          "timestamp": "2026-11-20T01:17:30.377112Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r0-parcel",
+            "tool_name": "search_location",
+            "is_cached": false,
+            "argument_fingerprint": "e006f39534eed87dc37d71b3af17a60e809e35326557e066d51e9a0bef86be1c"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-14",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 14,
+          "timestamp": "2026-11-20T01:17:30.390174Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 15,
+          "payload": {
+            "step_id": "r0-parcel",
+            "tool_name": "search_location",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-15",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 15,
+          "timestamp": "2026-11-20T01:17:30.397178Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r0-title",
+            "tool_name": "get_building_detail",
+            "is_cached": false,
+            "argument_fingerprint": "9692d5327347880c0c70f3644ff2fd442250274070b9652daa323bae8cf541dd"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-16",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 16,
+          "timestamp": "2026-11-20T01:17:30.404705Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 16,
+          "payload": {
+            "step_id": "r0-title",
+            "tool_name": "get_building_detail",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-17",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 17,
+          "timestamp": "2026-11-20T01:17:30.412822Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "execute_tools",
+          "duration_ms": 63,
+          "payload": {
+            "outcome": "COMPLETED",
+            "steps": [
+              {
+                "step_id": "r0-rent",
+                "tool_name": "search_rental_transactions",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r0-parcel",
+                "tool_name": "search_location",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r0-title",
+                "tool_name": "get_building_detail",
+                "status": "SUCCEEDED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-18",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 18,
+          "timestamp": "2026-11-20T01:17:30.425473Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "normalize_results",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-19",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 19,
+          "timestamp": "2026-11-20T01:17:30.437166Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "normalize_results",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-20",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 20,
+          "timestamp": "2026-11-20T01:17:30.446124Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-21",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 21,
+          "timestamp": "2026-11-20T01:17:30.455003Z",
+          "event_type": "CONSTRAINT_EVALUATED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {
+            "checks": [
+              {
+                "rule": "PLAN_TIMELINE",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "CURRENT_LISTING",
+                "status": "UNKNOWN",
+                "reason": "HISTORICAL_DATA_ONLY"
+              },
+              {
+                "rule": "BUILDING_MATCH",
+                "status": "PASS",
+                "reason": "PARCEL_AND_NAME_MATCH"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-22",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 22,
+          "timestamp": "2026-11-20T01:17:30.462593Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-23",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 23,
+          "timestamp": "2026-11-20T01:17:30.470580Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "generate_response",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-24",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 24,
+          "timestamp": "2026-11-20T01:17:30.481538Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "generate_response",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "first_pass-event-25",
+          "run_id": "first_pass-run",
+          "session_id": "first_pass-session",
+          "sequence": 25,
+          "timestamp": "2026-11-20T01:17:30.515146Z",
+          "event_type": "RUN_FINISHED",
+          "node_name": null,
+          "duration_ms": 453,
+          "payload": {
+            "status": "SUCCEEDED",
+            "replan_count": 0,
+            "evidence": {
+              "sources": [
+                {
+                  "ref": "00ba2423-128e-5011-895a-b79f49c0292b",
+                  "provider": "MOLIT_RENT",
+                  "url": "https://www.data.go.kr/data/15126473/openapi.do",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": "2025-01-16T00:00:00+00:00",
+                  "caveat": "과거 신고 거래이며 현재 임대 여부는 확인되지 않았습니다."
+                },
+                {
+                  "ref": "0a8692e1-3741-59e5-bf98-67e5252ee88f",
+                  "provider": "KAKAO_LOCAL",
+                  "url": "https://developers.kakao.com/docs/ko/local/dev-guide",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": null,
+                  "caveat": null
+                },
+                {
+                  "ref": "247b5c93-2455-5445-b147-58d584cba7f4",
+                  "provider": "BUILDING_HUB",
+                  "url": "https://www.data.go.kr/data/15134735/openapi.do",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": null,
+                  "caveat": null
+                }
+              ],
+              "checks": [
+                {
+                  "rule": "PLAN_TIMELINE",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": []
+                },
+                {
+                  "rule": "HISTORICAL_DEPOSIT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "00ba2423-128e-5011-895a-b79f49c0292b"
+                  ]
+                },
+                {
+                  "rule": "HISTORICAL_RENT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "00ba2423-128e-5011-895a-b79f49c0292b"
+                  ]
+                },
+                {
+                  "rule": "CURRENT_LISTING",
+                  "status": "UNKNOWN",
+                  "reason": "HISTORICAL_DATA_ONLY",
+                  "refs": []
+                },
+                {
+                  "rule": "BUILDING_MATCH",
+                  "status": "PASS",
+                  "reason": "PARCEL_AND_NAME_MATCH",
+                  "refs": [
+                    "247b5c93-2455-5445-b147-58d584cba7f4"
+                  ]
+                }
+              ]
+            },
+            "anomaly": {
+              "status": "NORMAL",
+              "findings": {},
+              "diagnosis": {
+                "status": "NOT_REQUESTED"
+              }
+            }
+          },
+          "reason_summary": null
+        }
+      ]
+    },
+    {
+      "scenario": "replan",
+      "synthetic_request": "서울 종로구(11110) 희망, 보증금 3000만원, 월세 60만원. 2025년 1월 거래. 준비 시작일 2026-11-20, 준비 기간 7일, 출근일 2026-12-01. 대안으로 서울 중구(11140), 서울 용산구(11170), 서울 성동구(11200) 허용",
+      "expected": {
+        "chat_status": "SUCCEEDED",
+        "replans": 1,
+        "rent_evaluations": [
+          "FAIL",
+          "PASS"
+        ],
+        "tool_calls": 4,
+        "tool_failures": 0,
+        "anomaly": "NORMAL"
+      },
+      "actual": {
+        "chat_status": "SUCCEEDED",
+        "replans": 1,
+        "rent_evaluations": [
+          "FAIL",
+          "PASS"
+        ],
+        "tool_calls": 4,
+        "tool_failures": 0,
+        "anomaly": "NORMAL"
+      },
+      "differences": [],
+      "final_response": "예시빌라의 과거 계약 사례를 확인했습니다. 보증금 20,000,000원, 월세 500,000원. 건축물대장 표제부와 건물 수준에서 일치했습니다 (주용도 주택). 출처는 국토교통부 전월세 실거래, 카카오 로컬, 국토교통부 건축HUB입니다. 신고된 과거 전월세 계약 사례이며 현재 임대할 수 있는 매물인지는 확인되지 않았습니다. 이 계획은 계약·금융 전문가의 조언을 대신하지 않습니다. 조회 기준 계약월 202501. 신고·공개 시차와 조회 한도가 적용됩니다.",
+      "events": [
+        {
+          "event_id": "replan-event-1",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 1,
+          "timestamp": "2026-11-20T01:17:30.636830Z",
+          "event_type": "RUN_STARTED",
+          "node_name": null,
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-2",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 2,
+          "timestamp": "2026-11-20T01:17:30.668579Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "analyze_request",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-3",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 3,
+          "timestamp": "2026-11-20T01:17:30.678374Z",
+          "event_type": "INTENT_DECIDED",
+          "node_name": "analyze_request",
+          "duration_ms": null,
+          "payload": {
+            "intent": "CREATE_PLAN",
+            "reason_summary": "독립 준비 일정과 주거 조건을 조합하는 계획 요청으로 분류했습니다."
+          },
+          "reason_summary": "독립 준비 일정과 주거 조건을 조합하는 계획 요청으로 분류했습니다."
+        },
+        {
+          "event_id": "replan-event-4",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 4,
+          "timestamp": "2026-11-20T01:17:30.684586Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "analyze_request",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-5",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 5,
+          "timestamp": "2026-11-20T01:17:30.692615Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "validate_input",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-6",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 6,
+          "timestamp": "2026-11-20T01:17:30.698309Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "validate_input",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-7",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 7,
+          "timestamp": "2026-11-20T01:17:30.704644Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-8",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 8,
+          "timestamp": "2026-11-20T01:17:30.713200Z",
+          "event_type": "WORKFLOW_CREATED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {
+            "steps": [
+              {
+                "step_id": "r0-rent",
+                "tool_name": "search_rental_transactions",
+                "depends_on": []
+              },
+              {
+                "step_id": "r0-parcel",
+                "tool_name": "search_location",
+                "depends_on": [
+                  "r0-rent"
+                ]
+              },
+              {
+                "step_id": "r0-title",
+                "tool_name": "get_building_detail",
+                "depends_on": [
+                  "r0-rent",
+                  "r0-parcel"
+                ]
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-9",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 9,
+          "timestamp": "2026-11-20T01:17:30.719386Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "plan_workflow",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-10",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 10,
+          "timestamp": "2026-11-20T01:17:30.726390Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-11",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 11,
+          "timestamp": "2026-11-20T01:17:30.733900Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r0-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false,
+            "argument_fingerprint": "bf648ba50d428101ee6f2af235ae848af4fd55692eb009a198c631494b0d7231"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-12",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 12,
+          "timestamp": "2026-11-20T01:17:30.741022Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 0,
+          "payload": {
+            "step_id": "r0-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-13",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 13,
+          "timestamp": "2026-11-20T01:17:30.750271Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "execute_tools",
+          "duration_ms": 32,
+          "payload": {
+            "outcome": "COMPLETED",
+            "steps": [
+              {
+                "step_id": "r0-rent",
+                "tool_name": "search_rental_transactions",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r0-parcel",
+                "tool_name": "search_location",
+                "status": "SKIPPED"
+              },
+              {
+                "step_id": "r0-title",
+                "tool_name": "get_building_detail",
+                "status": "SKIPPED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-14",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 14,
+          "timestamp": "2026-11-20T01:17:30.757277Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "normalize_results",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-15",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 15,
+          "timestamp": "2026-11-20T01:17:30.763798Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "normalize_results",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-16",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 16,
+          "timestamp": "2026-11-20T01:17:30.770321Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-17",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 17,
+          "timestamp": "2026-11-20T01:17:30.776375Z",
+          "event_type": "CONSTRAINT_EVALUATED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {
+            "checks": [
+              {
+                "rule": "PLAN_TIMELINE",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-18",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 18,
+          "timestamp": "2026-11-20T01:17:30.782628Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-19",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 19,
+          "timestamp": "2026-11-20T01:17:30.790141Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "replan",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-20",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 20,
+          "timestamp": "2026-11-20T01:17:30.797524Z",
+          "event_type": "REPLAN_STARTED",
+          "node_name": "replan",
+          "duration_ms": null,
+          "payload": {
+            "replan_count": 1,
+            "reason": "BUDGET_FAIL"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-21",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 21,
+          "timestamp": "2026-11-20T01:17:30.803695Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "replan",
+          "duration_ms": 0,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-22",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 22,
+          "timestamp": "2026-11-20T01:17:30.810481Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-23",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 23,
+          "timestamp": "2026-11-20T01:17:30.817733Z",
+          "event_type": "WORKFLOW_CREATED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {
+            "steps": [
+              {
+                "step_id": "r1-rent",
+                "tool_name": "search_rental_transactions",
+                "depends_on": []
+              },
+              {
+                "step_id": "r1-parcel",
+                "tool_name": "search_location",
+                "depends_on": [
+                  "r1-rent"
+                ]
+              },
+              {
+                "step_id": "r1-title",
+                "tool_name": "get_building_detail",
+                "depends_on": [
+                  "r1-rent",
+                  "r1-parcel"
+                ]
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-24",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 24,
+          "timestamp": "2026-11-20T01:17:30.823249Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "plan_workflow",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-25",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 25,
+          "timestamp": "2026-11-20T01:17:30.830758Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-26",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 26,
+          "timestamp": "2026-11-20T01:17:30.836881Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r1-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false,
+            "argument_fingerprint": "1b97079ca8019b7b2c5e2fa4c2bbf865a70b8d2ed2f008d79d90940898da9275"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-27",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 27,
+          "timestamp": "2026-11-20T01:17:30.845399Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 0,
+          "payload": {
+            "step_id": "r1-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-28",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 28,
+          "timestamp": "2026-11-20T01:17:30.851657Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r1-parcel",
+            "tool_name": "search_location",
+            "is_cached": false,
+            "argument_fingerprint": "85fa78fe9d5066c68362a72b8fa4b1069e4ce5b9e0698ba8403d082d093b60a1"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-29",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 29,
+          "timestamp": "2026-11-20T01:17:30.857657Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 16,
+          "payload": {
+            "step_id": "r1-parcel",
+            "tool_name": "search_location",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-30",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 30,
+          "timestamp": "2026-11-20T01:17:30.863929Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r1-title",
+            "tool_name": "get_building_detail",
+            "is_cached": false,
+            "argument_fingerprint": "b1c0c53250d3128320e40041f443e9bda7b507321a04f141a962d3a28d0953d1"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-31",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 31,
+          "timestamp": "2026-11-20T01:17:30.874438Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 16,
+          "payload": {
+            "step_id": "r1-title",
+            "tool_name": "get_building_detail",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-32",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 32,
+          "timestamp": "2026-11-20T01:17:30.880653Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "execute_tools",
+          "duration_ms": 47,
+          "payload": {
+            "outcome": "COMPLETED",
+            "steps": [
+              {
+                "step_id": "r1-rent",
+                "tool_name": "search_rental_transactions",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r1-parcel",
+                "tool_name": "search_location",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r1-title",
+                "tool_name": "get_building_detail",
+                "status": "SUCCEEDED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-33",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 33,
+          "timestamp": "2026-11-20T01:17:30.889930Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "normalize_results",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-34",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 34,
+          "timestamp": "2026-11-20T01:17:30.899437Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "normalize_results",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-35",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 35,
+          "timestamp": "2026-11-20T01:17:30.908942Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-36",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 36,
+          "timestamp": "2026-11-20T01:17:30.915520Z",
+          "event_type": "CONSTRAINT_EVALUATED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {
+            "checks": [
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              },
+              {
+                "rule": "PLAN_TIMELINE",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "CURRENT_LISTING",
+                "status": "UNKNOWN",
+                "reason": "HISTORICAL_DATA_ONLY"
+              },
+              {
+                "rule": "BUILDING_MATCH",
+                "status": "PASS",
+                "reason": "PARCEL_AND_NAME_MATCH"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-37",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 37,
+          "timestamp": "2026-11-20T01:17:30.925936Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-38",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 38,
+          "timestamp": "2026-11-20T01:17:30.931449Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "generate_response",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-39",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 39,
+          "timestamp": "2026-11-20T01:17:30.938443Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "generate_response",
+          "duration_ms": 0,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan-event-40",
+          "run_id": "replan-run",
+          "session_id": "replan-session",
+          "sequence": 40,
+          "timestamp": "2026-11-20T01:17:30.956895Z",
+          "event_type": "RUN_FINISHED",
+          "node_name": null,
+          "duration_ms": 313,
+          "payload": {
+            "status": "SUCCEEDED",
+            "replan_count": 1,
+            "evidence": {
+              "sources": [
+                {
+                  "ref": "3d16c308-bf17-5594-9054-70d0f4556592",
+                  "provider": "MOLIT_RENT",
+                  "url": "https://www.data.go.kr/data/15126473/openapi.do",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": "2025-01-16T00:00:00+00:00",
+                  "caveat": "과거 신고 거래이며 현재 임대 여부는 확인되지 않았습니다."
+                },
+                {
+                  "ref": "82af1972-6c9d-506e-90ee-0a6a8dca1f1c",
+                  "provider": "MOLIT_RENT",
+                  "url": "https://www.data.go.kr/data/15126473/openapi.do",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": "2025-01-16T00:00:00+00:00",
+                  "caveat": "과거 신고 거래이며 현재 임대 여부는 확인되지 않았습니다."
+                },
+                {
+                  "ref": "99cd1462-e2d4-5b1d-a4d9-d074ead88e81",
+                  "provider": "KAKAO_LOCAL",
+                  "url": "https://developers.kakao.com/docs/ko/local/dev-guide",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": null,
+                  "caveat": null
+                },
+                {
+                  "ref": "c1d03a2d-928a-55a8-8b34-4726ff7896a5",
+                  "provider": "BUILDING_HUB",
+                  "url": "https://www.data.go.kr/data/15134735/openapi.do",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": null,
+                  "caveat": null
+                }
+              ],
+              "checks": [
+                {
+                  "rule": "HISTORICAL_DEPOSIT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "3d16c308-bf17-5594-9054-70d0f4556592"
+                  ]
+                },
+                {
+                  "rule": "HISTORICAL_RENT",
+                  "status": "FAIL",
+                  "reason": "LIMIT_EXCEEDED",
+                  "refs": [
+                    "3d16c308-bf17-5594-9054-70d0f4556592"
+                  ]
+                },
+                {
+                  "rule": "PLAN_TIMELINE",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": []
+                },
+                {
+                  "rule": "HISTORICAL_DEPOSIT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "82af1972-6c9d-506e-90ee-0a6a8dca1f1c"
+                  ]
+                },
+                {
+                  "rule": "HISTORICAL_RENT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "82af1972-6c9d-506e-90ee-0a6a8dca1f1c"
+                  ]
+                },
+                {
+                  "rule": "CURRENT_LISTING",
+                  "status": "UNKNOWN",
+                  "reason": "HISTORICAL_DATA_ONLY",
+                  "refs": []
+                },
+                {
+                  "rule": "BUILDING_MATCH",
+                  "status": "PASS",
+                  "reason": "PARCEL_AND_NAME_MATCH",
+                  "refs": [
+                    "c1d03a2d-928a-55a8-8b34-4726ff7896a5"
+                  ]
+                }
+              ]
+            },
+            "anomaly": {
+              "status": "NORMAL",
+              "findings": {},
+              "diagnosis": {
+                "status": "NOT_REQUESTED"
+              }
+            }
+          },
+          "reason_summary": null
+        }
+      ]
+    },
+    {
+      "scenario": "replan_limit",
+      "synthetic_request": "서울 종로구(11110) 희망, 보증금 3000만원, 월세 60만원. 2025년 1월 거래. 준비 시작일 2026-11-20, 준비 기간 7일, 출근일 2026-12-01. 대안으로 서울 중구(11140), 서울 용산구(11170), 서울 성동구(11200) 허용",
+      "expected": {
+        "chat_status": "EXHAUSTED",
+        "replans": 3,
+        "rent_evaluations": [
+          "FAIL",
+          "FAIL",
+          "FAIL",
+          "FAIL"
+        ],
+        "tool_calls": 4,
+        "tool_failures": 0,
+        "anomaly": "NORMAL"
+      },
+      "actual": {
+        "chat_status": "EXHAUSTED",
+        "replans": 3,
+        "rent_evaluations": [
+          "FAIL",
+          "FAIL",
+          "FAIL",
+          "FAIL"
+        ],
+        "tool_calls": 4,
+        "tool_failures": 0,
+        "anomaly": "NORMAL"
+      },
+      "differences": [],
+      "final_response": "조회 범위에서 조건에 맞는 과거 거래 사례를 확인하지 못했습니다. 재계획 3회 상한에 도달했습니다. 다른 지역이나 조회 범위를 지정해 주세요. 일부 사례는 월세 상한을 초과했습니다. 출처는 국토교통부 전월세 실거래입니다. 신고된 과거 전월세 계약 사례이며 현재 임대할 수 있는 매물인지는 확인되지 않았습니다. 이 계획은 계약·금융 전문가의 조언을 대신하지 않습니다. 조회 기준 계약월 202501. 신고·공개 시차와 조회 한도가 적용됩니다.",
+      "events": [
+        {
+          "event_id": "replan_limit-event-1",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 1,
+          "timestamp": "2026-11-20T01:17:31.053682Z",
+          "event_type": "RUN_STARTED",
+          "node_name": null,
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-2",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 2,
+          "timestamp": "2026-11-20T01:17:31.077209Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "analyze_request",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-3",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 3,
+          "timestamp": "2026-11-20T01:17:31.091918Z",
+          "event_type": "INTENT_DECIDED",
+          "node_name": "analyze_request",
+          "duration_ms": null,
+          "payload": {
+            "intent": "CREATE_PLAN",
+            "reason_summary": "독립 준비 일정과 주거 조건을 조합하는 계획 요청으로 분류했습니다."
+          },
+          "reason_summary": "독립 준비 일정과 주거 조건을 조합하는 계획 요청으로 분류했습니다."
+        },
+        {
+          "event_id": "replan_limit-event-4",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 4,
+          "timestamp": "2026-11-20T01:17:31.096918Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "analyze_request",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-5",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 5,
+          "timestamp": "2026-11-20T01:17:31.101426Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "validate_input",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-6",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 6,
+          "timestamp": "2026-11-20T01:17:31.109127Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "validate_input",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-7",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 7,
+          "timestamp": "2026-11-20T01:17:31.115132Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-8",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 8,
+          "timestamp": "2026-11-20T01:17:31.121642Z",
+          "event_type": "WORKFLOW_CREATED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {
+            "steps": [
+              {
+                "step_id": "r0-rent",
+                "tool_name": "search_rental_transactions",
+                "depends_on": []
+              },
+              {
+                "step_id": "r0-parcel",
+                "tool_name": "search_location",
+                "depends_on": [
+                  "r0-rent"
+                ]
+              },
+              {
+                "step_id": "r0-title",
+                "tool_name": "get_building_detail",
+                "depends_on": [
+                  "r0-rent",
+                  "r0-parcel"
+                ]
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-9",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 9,
+          "timestamp": "2026-11-20T01:17:31.128751Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "plan_workflow",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-10",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 10,
+          "timestamp": "2026-11-20T01:17:31.133261Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-11",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 11,
+          "timestamp": "2026-11-20T01:17:31.141275Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r0-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false,
+            "argument_fingerprint": "441f33b498388e722945975f9567b333f08b0e54b4574e30a9343a6bc9569d12"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-12",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 12,
+          "timestamp": "2026-11-20T01:17:31.147279Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 0,
+          "payload": {
+            "step_id": "r0-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-13",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 13,
+          "timestamp": "2026-11-20T01:17:31.152790Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "execute_tools",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED",
+            "steps": [
+              {
+                "step_id": "r0-rent",
+                "tool_name": "search_rental_transactions",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r0-parcel",
+                "tool_name": "search_location",
+                "status": "SKIPPED"
+              },
+              {
+                "step_id": "r0-title",
+                "tool_name": "get_building_detail",
+                "status": "SKIPPED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-14",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 14,
+          "timestamp": "2026-11-20T01:17:31.158792Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "normalize_results",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-15",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 15,
+          "timestamp": "2026-11-20T01:17:31.163809Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "normalize_results",
+          "duration_ms": 0,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-16",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 16,
+          "timestamp": "2026-11-20T01:17:31.172324Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-17",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 17,
+          "timestamp": "2026-11-20T01:17:31.180367Z",
+          "event_type": "CONSTRAINT_EVALUATED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {
+            "checks": [
+              {
+                "rule": "PLAN_TIMELINE",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-18",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 18,
+          "timestamp": "2026-11-20T01:17:31.187372Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-19",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 19,
+          "timestamp": "2026-11-20T01:17:31.194553Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "replan",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-20",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 20,
+          "timestamp": "2026-11-20T01:17:31.201061Z",
+          "event_type": "REPLAN_STARTED",
+          "node_name": "replan",
+          "duration_ms": null,
+          "payload": {
+            "replan_count": 1,
+            "reason": "BUDGET_FAIL"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-21",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 21,
+          "timestamp": "2026-11-20T01:17:31.210113Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "replan",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-22",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 22,
+          "timestamp": "2026-11-20T01:17:31.228621Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-23",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 23,
+          "timestamp": "2026-11-20T01:17:31.246505Z",
+          "event_type": "WORKFLOW_CREATED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {
+            "steps": [
+              {
+                "step_id": "r1-rent",
+                "tool_name": "search_rental_transactions",
+                "depends_on": []
+              },
+              {
+                "step_id": "r1-parcel",
+                "tool_name": "search_location",
+                "depends_on": [
+                  "r1-rent"
+                ]
+              },
+              {
+                "step_id": "r1-title",
+                "tool_name": "get_building_detail",
+                "depends_on": [
+                  "r1-rent",
+                  "r1-parcel"
+                ]
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-24",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 24,
+          "timestamp": "2026-11-20T01:17:31.263693Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "plan_workflow",
+          "duration_ms": 31,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-25",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 25,
+          "timestamp": "2026-11-20T01:17:31.272742Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-26",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 26,
+          "timestamp": "2026-11-20T01:17:31.289838Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r1-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false,
+            "argument_fingerprint": "c22701a22d2d8db674d65d0f27db13e4b6e5bf6fc9dec96339fef25bd7f4f0ea"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-27",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 27,
+          "timestamp": "2026-11-20T01:17:31.304344Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 0,
+          "payload": {
+            "step_id": "r1-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-28",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 28,
+          "timestamp": "2026-11-20T01:17:31.314259Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "execute_tools",
+          "duration_ms": 47,
+          "payload": {
+            "outcome": "COMPLETED",
+            "steps": [
+              {
+                "step_id": "r1-rent",
+                "tool_name": "search_rental_transactions",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r1-parcel",
+                "tool_name": "search_location",
+                "status": "SKIPPED"
+              },
+              {
+                "step_id": "r1-title",
+                "tool_name": "get_building_detail",
+                "status": "SKIPPED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-29",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 29,
+          "timestamp": "2026-11-20T01:17:31.330776Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "normalize_results",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-30",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 30,
+          "timestamp": "2026-11-20T01:17:31.339883Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "normalize_results",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-31",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 31,
+          "timestamp": "2026-11-20T01:17:31.347507Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-32",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 32,
+          "timestamp": "2026-11-20T01:17:31.371438Z",
+          "event_type": "CONSTRAINT_EVALUATED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {
+            "checks": [
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              },
+              {
+                "rule": "PLAN_TIMELINE",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-33",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 33,
+          "timestamp": "2026-11-20T01:17:31.382435Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": 32,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-34",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 34,
+          "timestamp": "2026-11-20T01:17:31.392537Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "replan",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-35",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 35,
+          "timestamp": "2026-11-20T01:17:31.405395Z",
+          "event_type": "REPLAN_STARTED",
+          "node_name": "replan",
+          "duration_ms": null,
+          "payload": {
+            "replan_count": 2,
+            "reason": "BUDGET_FAIL"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-36",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 36,
+          "timestamp": "2026-11-20T01:17:31.417535Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "replan",
+          "duration_ms": 32,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-37",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 37,
+          "timestamp": "2026-11-20T01:17:31.436980Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-38",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 38,
+          "timestamp": "2026-11-20T01:17:31.452601Z",
+          "event_type": "WORKFLOW_CREATED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {
+            "steps": [
+              {
+                "step_id": "r2-rent",
+                "tool_name": "search_rental_transactions",
+                "depends_on": []
+              },
+              {
+                "step_id": "r2-parcel",
+                "tool_name": "search_location",
+                "depends_on": [
+                  "r2-rent"
+                ]
+              },
+              {
+                "step_id": "r2-title",
+                "tool_name": "get_building_detail",
+                "depends_on": [
+                  "r2-rent",
+                  "r2-parcel"
+                ]
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-39",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 39,
+          "timestamp": "2026-11-20T01:17:31.465614Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "plan_workflow",
+          "duration_ms": 31,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-40",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 40,
+          "timestamp": "2026-11-20T01:17:31.486310Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-41",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 41,
+          "timestamp": "2026-11-20T01:17:31.506181Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r2-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false,
+            "argument_fingerprint": "d2f5f9cdc8217b9f155f250954d28ab74e9f5455d6911809c4b6d0795ff872ea"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-42",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 42,
+          "timestamp": "2026-11-20T01:17:31.516795Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 15,
+          "payload": {
+            "step_id": "r2-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-43",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 43,
+          "timestamp": "2026-11-20T01:17:31.544470Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "execute_tools",
+          "duration_ms": 63,
+          "payload": {
+            "outcome": "COMPLETED",
+            "steps": [
+              {
+                "step_id": "r2-rent",
+                "tool_name": "search_rental_transactions",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r2-parcel",
+                "tool_name": "search_location",
+                "status": "SKIPPED"
+              },
+              {
+                "step_id": "r2-title",
+                "tool_name": "get_building_detail",
+                "status": "SKIPPED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-44",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 44,
+          "timestamp": "2026-11-20T01:17:31.586518Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "normalize_results",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-45",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 45,
+          "timestamp": "2026-11-20T01:17:31.609988Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "normalize_results",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-46",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 46,
+          "timestamp": "2026-11-20T01:17:31.629074Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-47",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 47,
+          "timestamp": "2026-11-20T01:17:31.643586Z",
+          "event_type": "CONSTRAINT_EVALUATED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {
+            "checks": [
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              },
+              {
+                "rule": "PLAN_TIMELINE",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-48",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 48,
+          "timestamp": "2026-11-20T01:17:31.652599Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": 31,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-49",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 49,
+          "timestamp": "2026-11-20T01:17:31.665684Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "replan",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-50",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 50,
+          "timestamp": "2026-11-20T01:17:31.671701Z",
+          "event_type": "REPLAN_STARTED",
+          "node_name": "replan",
+          "duration_ms": null,
+          "payload": {
+            "replan_count": 3,
+            "reason": "BUDGET_FAIL"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-51",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 51,
+          "timestamp": "2026-11-20T01:17:31.677440Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "replan",
+          "duration_ms": 0,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-52",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 52,
+          "timestamp": "2026-11-20T01:17:31.691199Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-53",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 53,
+          "timestamp": "2026-11-20T01:17:31.711343Z",
+          "event_type": "WORKFLOW_CREATED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {
+            "steps": [
+              {
+                "step_id": "r3-rent",
+                "tool_name": "search_rental_transactions",
+                "depends_on": []
+              },
+              {
+                "step_id": "r3-parcel",
+                "tool_name": "search_location",
+                "depends_on": [
+                  "r3-rent"
+                ]
+              },
+              {
+                "step_id": "r3-title",
+                "tool_name": "get_building_detail",
+                "depends_on": [
+                  "r3-rent",
+                  "r3-parcel"
+                ]
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-54",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 54,
+          "timestamp": "2026-11-20T01:17:31.721377Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "plan_workflow",
+          "duration_ms": 31,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-55",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 55,
+          "timestamp": "2026-11-20T01:17:31.730430Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-56",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 56,
+          "timestamp": "2026-11-20T01:17:31.741734Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r3-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false,
+            "argument_fingerprint": "ea4a37e5668bcfe1565a48a8a307dd4865da6e19a158255c2b328d480e83742a"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-57",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 57,
+          "timestamp": "2026-11-20T01:17:31.748736Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 16,
+          "payload": {
+            "step_id": "r3-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-58",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 58,
+          "timestamp": "2026-11-20T01:17:31.756281Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "execute_tools",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED",
+            "steps": [
+              {
+                "step_id": "r3-rent",
+                "tool_name": "search_rental_transactions",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r3-parcel",
+                "tool_name": "search_location",
+                "status": "SKIPPED"
+              },
+              {
+                "step_id": "r3-title",
+                "tool_name": "get_building_detail",
+                "status": "SKIPPED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-59",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 59,
+          "timestamp": "2026-11-20T01:17:31.769968Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "normalize_results",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-60",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 60,
+          "timestamp": "2026-11-20T01:17:31.789340Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "normalize_results",
+          "duration_ms": 32,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-61",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 61,
+          "timestamp": "2026-11-20T01:17:31.802537Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-62",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 62,
+          "timestamp": "2026-11-20T01:17:31.809042Z",
+          "event_type": "CONSTRAINT_EVALUATED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {
+            "checks": [
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              },
+              {
+                "rule": "PLAN_TIMELINE",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "FAIL",
+                "reason": "LIMIT_EXCEEDED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-63",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 63,
+          "timestamp": "2026-11-20T01:17:31.815549Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-64",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 64,
+          "timestamp": "2026-11-20T01:17:31.828466Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "replan",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-65",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 65,
+          "timestamp": "2026-11-20T01:17:31.839880Z",
+          "event_type": "REPLAN_EXHAUSTED",
+          "node_name": "replan",
+          "duration_ms": null,
+          "payload": {
+            "replan_count": 3,
+            "reason": "MAX_REPLANS"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-66",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 66,
+          "timestamp": "2026-11-20T01:17:31.851461Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "replan",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-67",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 67,
+          "timestamp": "2026-11-20T01:17:31.868629Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "generate_response",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-68",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 68,
+          "timestamp": "2026-11-20T01:17:31.883357Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "generate_response",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "replan_limit-event-69",
+          "run_id": "replan_limit-run",
+          "session_id": "replan_limit-session",
+          "sequence": 69,
+          "timestamp": "2026-11-20T01:17:31.932655Z",
+          "event_type": "RUN_FINISHED",
+          "node_name": null,
+          "duration_ms": 890,
+          "payload": {
+            "status": "EXHAUSTED",
+            "replan_count": 3,
+            "evidence": {
+              "sources": [
+                {
+                  "ref": "8fa00d94-761e-56be-9c8c-dfa5eea2d53d",
+                  "provider": "MOLIT_RENT",
+                  "url": "https://www.data.go.kr/data/15126473/openapi.do",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": "2025-01-16T00:00:00+00:00",
+                  "caveat": "과거 신고 거래이며 현재 임대 여부는 확인되지 않았습니다."
+                },
+                {
+                  "ref": "3cbe536a-0f82-5d43-b333-6cfa06fd75ba",
+                  "provider": "MOLIT_RENT",
+                  "url": "https://www.data.go.kr/data/15126473/openapi.do",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": "2025-01-16T00:00:00+00:00",
+                  "caveat": "과거 신고 거래이며 현재 임대 여부는 확인되지 않았습니다."
+                },
+                {
+                  "ref": "a315d349-05e4-55c6-bac2-f6c17e79c5b1",
+                  "provider": "MOLIT_RENT",
+                  "url": "https://www.data.go.kr/data/15126473/openapi.do",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": "2025-01-16T00:00:00+00:00",
+                  "caveat": "과거 신고 거래이며 현재 임대 여부는 확인되지 않았습니다."
+                },
+                {
+                  "ref": "715b0b67-80ff-5f80-a7b3-31a7a72da269",
+                  "provider": "MOLIT_RENT",
+                  "url": "https://www.data.go.kr/data/15126473/openapi.do",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": "2025-01-16T00:00:00+00:00",
+                  "caveat": "과거 신고 거래이며 현재 임대 여부는 확인되지 않았습니다."
+                }
+              ],
+              "checks": [
+                {
+                  "rule": "HISTORICAL_DEPOSIT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "8fa00d94-761e-56be-9c8c-dfa5eea2d53d"
+                  ]
+                },
+                {
+                  "rule": "HISTORICAL_RENT",
+                  "status": "FAIL",
+                  "reason": "LIMIT_EXCEEDED",
+                  "refs": [
+                    "8fa00d94-761e-56be-9c8c-dfa5eea2d53d"
+                  ]
+                },
+                {
+                  "rule": "HISTORICAL_DEPOSIT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "3cbe536a-0f82-5d43-b333-6cfa06fd75ba"
+                  ]
+                },
+                {
+                  "rule": "HISTORICAL_RENT",
+                  "status": "FAIL",
+                  "reason": "LIMIT_EXCEEDED",
+                  "refs": [
+                    "3cbe536a-0f82-5d43-b333-6cfa06fd75ba"
+                  ]
+                },
+                {
+                  "rule": "HISTORICAL_DEPOSIT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "a315d349-05e4-55c6-bac2-f6c17e79c5b1"
+                  ]
+                },
+                {
+                  "rule": "HISTORICAL_RENT",
+                  "status": "FAIL",
+                  "reason": "LIMIT_EXCEEDED",
+                  "refs": [
+                    "a315d349-05e4-55c6-bac2-f6c17e79c5b1"
+                  ]
+                },
+                {
+                  "rule": "PLAN_TIMELINE",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": []
+                },
+                {
+                  "rule": "HISTORICAL_DEPOSIT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "715b0b67-80ff-5f80-a7b3-31a7a72da269"
+                  ]
+                },
+                {
+                  "rule": "HISTORICAL_RENT",
+                  "status": "FAIL",
+                  "reason": "LIMIT_EXCEEDED",
+                  "refs": [
+                    "715b0b67-80ff-5f80-a7b3-31a7a72da269"
+                  ]
+                }
+              ]
+            },
+            "anomaly": {
+              "status": "NORMAL",
+              "findings": {},
+              "diagnosis": {
+                "status": "NOT_REQUESTED"
+              }
+            }
+          },
+          "reason_summary": null
+        }
+      ]
+    },
+    {
+      "scenario": "partial_tool_failure",
+      "synthetic_request": "서울 종로구(11110) 희망, 보증금 3000만원, 월세 60만원. 2025년 1월 거래. 준비 시작일 2026-11-20, 준비 기간 7일, 출근일 2026-12-01.",
+      "expected": {
+        "chat_status": "PARTIAL",
+        "replans": 0,
+        "rent_evaluations": [
+          "PASS"
+        ],
+        "tool_calls": 3,
+        "tool_failures": 1,
+        "anomaly": "NORMAL"
+      },
+      "actual": {
+        "chat_status": "PARTIAL",
+        "replans": 0,
+        "rent_evaluations": [
+          "PASS"
+        ],
+        "tool_calls": 3,
+        "tool_failures": 1,
+        "anomaly": "NORMAL"
+      },
+      "differences": [],
+      "final_response": "예시빌라의 과거 계약 사례를 확인했습니다. 보증금 20,000,000원, 월세 500,000원. 출처는 국토교통부 전월세 실거래, 카카오 로컬입니다. 신고된 과거 전월세 계약 사례이며 현재 임대할 수 있는 매물인지는 확인되지 않았습니다. 이 계획은 계약·금융 전문가의 조언을 대신하지 않습니다. 조회 기준 계약월 202501. 신고·공개 시차와 조회 한도가 적용됩니다. 건물 상세는 확인되지 않았습니다. 확인한 거래와 예산 비교 결과는 유지합니다.",
+      "events": [
+        {
+          "event_id": "partial_tool_failure-event-1",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 1,
+          "timestamp": "2026-11-20T01:17:32.076862Z",
+          "event_type": "RUN_STARTED",
+          "node_name": null,
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-2",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 2,
+          "timestamp": "2026-11-20T01:17:32.116090Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "analyze_request",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-3",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 3,
+          "timestamp": "2026-11-20T01:17:32.138457Z",
+          "event_type": "INTENT_DECIDED",
+          "node_name": "analyze_request",
+          "duration_ms": null,
+          "payload": {
+            "intent": "CREATE_PLAN",
+            "reason_summary": "독립 준비 일정과 주거 조건을 조합하는 계획 요청으로 분류했습니다."
+          },
+          "reason_summary": "독립 준비 일정과 주거 조건을 조합하는 계획 요청으로 분류했습니다."
+        },
+        {
+          "event_id": "partial_tool_failure-event-4",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 4,
+          "timestamp": "2026-11-20T01:17:32.160491Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "analyze_request",
+          "duration_ms": 47,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-5",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 5,
+          "timestamp": "2026-11-20T01:17:32.182154Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "validate_input",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-6",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 6,
+          "timestamp": "2026-11-20T01:17:32.208632Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "validate_input",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-7",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 7,
+          "timestamp": "2026-11-20T01:17:32.228786Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-8",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 8,
+          "timestamp": "2026-11-20T01:17:32.246583Z",
+          "event_type": "WORKFLOW_CREATED",
+          "node_name": "plan_workflow",
+          "duration_ms": null,
+          "payload": {
+            "steps": [
+              {
+                "step_id": "r0-rent",
+                "tool_name": "search_rental_transactions",
+                "depends_on": []
+              },
+              {
+                "step_id": "r0-parcel",
+                "tool_name": "search_location",
+                "depends_on": [
+                  "r0-rent"
+                ]
+              },
+              {
+                "step_id": "r0-title",
+                "tool_name": "get_building_detail",
+                "depends_on": [
+                  "r0-rent",
+                  "r0-parcel"
+                ]
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-9",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 9,
+          "timestamp": "2026-11-20T01:17:32.254018Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "plan_workflow",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-10",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 10,
+          "timestamp": "2026-11-20T01:17:32.259525Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-11",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 11,
+          "timestamp": "2026-11-20T01:17:32.265525Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r0-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false,
+            "argument_fingerprint": "d6348a6ac5d5570f502fbf6595a6a3b1d4bded2252c9624935bb152d08a45d06"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-12",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 12,
+          "timestamp": "2026-11-20T01:17:32.270381Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 0,
+          "payload": {
+            "step_id": "r0-rent",
+            "tool_name": "search_rental_transactions",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-13",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 13,
+          "timestamp": "2026-11-20T01:17:32.276384Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r0-parcel",
+            "tool_name": "search_location",
+            "is_cached": false,
+            "argument_fingerprint": "bcb07bb51d3f8386a0609d7fa58fd0332aba6ae712e5e80fc61d68c2342d2bb0"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-14",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 14,
+          "timestamp": "2026-11-20T01:17:32.282905Z",
+          "event_type": "TOOL_SUCCEEDED",
+          "node_name": "execute_tools",
+          "duration_ms": 0,
+          "payload": {
+            "step_id": "r0-parcel",
+            "tool_name": "search_location",
+            "is_cached": false
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-15",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 15,
+          "timestamp": "2026-11-20T01:17:32.286898Z",
+          "event_type": "TOOL_REQUESTED",
+          "node_name": "execute_tools",
+          "duration_ms": null,
+          "payload": {
+            "step_id": "r0-title",
+            "tool_name": "get_building_detail",
+            "is_cached": false,
+            "argument_fingerprint": "c3ca372971c6f2f77ad34e682dc3c8489abbf40870e4d815a8d6b93f31109e6e"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-16",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 16,
+          "timestamp": "2026-11-20T01:17:32.293912Z",
+          "event_type": "TOOL_FAILED",
+          "node_name": "execute_tools",
+          "duration_ms": 16,
+          "payload": {
+            "step_id": "r0-title",
+            "tool_name": "get_building_detail",
+            "is_cached": false,
+            "code": "TIMEOUT"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-17",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 17,
+          "timestamp": "2026-11-20T01:17:32.298414Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "execute_tools",
+          "duration_ms": 32,
+          "payload": {
+            "outcome": "COMPLETED",
+            "steps": [
+              {
+                "step_id": "r0-rent",
+                "tool_name": "search_rental_transactions",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r0-parcel",
+                "tool_name": "search_location",
+                "status": "SUCCEEDED"
+              },
+              {
+                "step_id": "r0-title",
+                "tool_name": "get_building_detail",
+                "status": "FAILED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-18",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 18,
+          "timestamp": "2026-11-20T01:17:32.303420Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "normalize_results",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-19",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 19,
+          "timestamp": "2026-11-20T01:17:32.309780Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "normalize_results",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-20",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 20,
+          "timestamp": "2026-11-20T01:17:32.314284Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-21",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 21,
+          "timestamp": "2026-11-20T01:17:32.319789Z",
+          "event_type": "CONSTRAINT_EVALUATED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": null,
+          "payload": {
+            "checks": [
+              {
+                "rule": "PLAN_TIMELINE",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_DEPOSIT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "HISTORICAL_RENT",
+                "status": "PASS",
+                "reason": "WITHIN_LIMIT"
+              },
+              {
+                "rule": "CURRENT_LISTING",
+                "status": "UNKNOWN",
+                "reason": "HISTORICAL_DATA_ONLY"
+              },
+              {
+                "rule": "BUILDING_MATCH",
+                "status": "UNKNOWN",
+                "reason": "BUILDING_NOT_VERIFIED"
+              }
+            ]
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-22",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 22,
+          "timestamp": "2026-11-20T01:17:32.324789Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "evaluate_constraints",
+          "duration_ms": 16,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-23",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 23,
+          "timestamp": "2026-11-20T01:17:32.329809Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "generate_response",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-24",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 24,
+          "timestamp": "2026-11-20T01:17:32.334812Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "generate_response",
+          "duration_ms": 0,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "partial_tool_failure-event-25",
+          "run_id": "partial_tool_failure-run",
+          "session_id": "partial_tool_failure-session",
+          "sequence": 25,
+          "timestamp": "2026-11-20T01:17:32.350731Z",
+          "event_type": "RUN_FINISHED",
+          "node_name": null,
+          "duration_ms": 265,
+          "payload": {
+            "status": "PARTIAL",
+            "replan_count": 0,
+            "evidence": {
+              "sources": [
+                {
+                  "ref": "3792d65d-dd30-5b88-95a7-f235c8443361",
+                  "provider": "MOLIT_RENT",
+                  "url": "https://www.data.go.kr/data/15126473/openapi.do",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": "2025-01-16T00:00:00+00:00",
+                  "caveat": "과거 신고 거래이며 현재 임대 여부는 확인되지 않았습니다."
+                },
+                {
+                  "ref": "a855b18b-ef0f-5344-a650-f169d976926c",
+                  "provider": "KAKAO_LOCAL",
+                  "url": "https://developers.kakao.com/docs/ko/local/dev-guide",
+                  "fetched_at": "2026-11-19T00:00:00+00:00",
+                  "observed_at": null,
+                  "caveat": null
+                }
+              ],
+              "checks": [
+                {
+                  "rule": "PLAN_TIMELINE",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": []
+                },
+                {
+                  "rule": "HISTORICAL_DEPOSIT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "3792d65d-dd30-5b88-95a7-f235c8443361"
+                  ]
+                },
+                {
+                  "rule": "HISTORICAL_RENT",
+                  "status": "PASS",
+                  "reason": "WITHIN_LIMIT",
+                  "refs": [
+                    "3792d65d-dd30-5b88-95a7-f235c8443361"
+                  ]
+                },
+                {
+                  "rule": "CURRENT_LISTING",
+                  "status": "UNKNOWN",
+                  "reason": "HISTORICAL_DATA_ONLY",
+                  "refs": []
+                },
+                {
+                  "rule": "BUILDING_MATCH",
+                  "status": "UNKNOWN",
+                  "reason": "BUILDING_NOT_VERIFIED",
+                  "refs": []
+                }
+              ]
+            },
+            "anomaly": {
+              "status": "NORMAL",
+              "findings": {},
+              "diagnosis": {
+                "status": "NOT_REQUESTED"
+              }
+            }
+          },
+          "reason_summary": null
+        }
+      ]
+    },
+    {
+      "scenario": "no_tool",
+      "synthetic_request": "이 플래너는 어떻게 쓰나요?",
+      "expected": {
+        "chat_status": "SUCCEEDED",
+        "replans": 0,
+        "rent_evaluations": [],
+        "tool_calls": 0,
+        "tool_failures": 0,
+        "anomaly": "NORMAL"
+      },
+      "actual": {
+        "chat_status": "SUCCEEDED",
+        "replans": 0,
+        "rent_evaluations": [],
+        "tool_calls": 0,
+        "tool_failures": 0,
+        "anomaly": "NORMAL"
+      },
+      "differences": [],
+      "final_response": "안녕하세요. 희망 지역과 예산, 준비 일정을 알려 주시면 독립 준비 계획을 만들 수 있어요.",
+      "events": [
+        {
+          "event_id": "no_tool-event-1",
+          "run_id": "no_tool-run",
+          "session_id": "no_tool-session",
+          "sequence": 1,
+          "timestamp": "2026-11-20T01:17:32.435802Z",
+          "event_type": "RUN_STARTED",
+          "node_name": null,
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "no_tool-event-2",
+          "run_id": "no_tool-run",
+          "session_id": "no_tool-session",
+          "sequence": 2,
+          "timestamp": "2026-11-20T01:17:32.452490Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "analyze_request",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "no_tool-event-3",
+          "run_id": "no_tool-run",
+          "session_id": "no_tool-session",
+          "sequence": 3,
+          "timestamp": "2026-11-20T01:17:32.458504Z",
+          "event_type": "INTENT_DECIDED",
+          "node_name": "analyze_request",
+          "duration_ms": null,
+          "payload": {
+            "intent": "GENERAL",
+            "reason_summary": "외부 자료 조회가 필요 없는 일반 대화 또는 사용법 문의로 분류했습니다."
+          },
+          "reason_summary": "외부 자료 조회가 필요 없는 일반 대화 또는 사용법 문의로 분류했습니다."
+        },
+        {
+          "event_id": "no_tool-event-4",
+          "run_id": "no_tool-run",
+          "session_id": "no_tool-session",
+          "sequence": 4,
+          "timestamp": "2026-11-20T01:17:32.463506Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "analyze_request",
+          "duration_ms": 15,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "no_tool-event-5",
+          "run_id": "no_tool-run",
+          "session_id": "no_tool-session",
+          "sequence": 5,
+          "timestamp": "2026-11-20T01:17:32.467506Z",
+          "event_type": "NODE_STARTED",
+          "node_name": "generate_response",
+          "duration_ms": null,
+          "payload": {},
+          "reason_summary": null
+        },
+        {
+          "event_id": "no_tool-event-6",
+          "run_id": "no_tool-run",
+          "session_id": "no_tool-session",
+          "sequence": 6,
+          "timestamp": "2026-11-20T01:17:32.472752Z",
+          "event_type": "NODE_FINISHED",
+          "node_name": "generate_response",
+          "duration_ms": 0,
+          "payload": {
+            "outcome": "COMPLETED"
+          },
+          "reason_summary": null
+        },
+        {
+          "event_id": "no_tool-event-7",
+          "run_id": "no_tool-run",
+          "session_id": "no_tool-session",
+          "sequence": 7,
+          "timestamp": "2026-11-20T01:17:32.487808Z",
+          "event_type": "RUN_FINISHED",
+          "node_name": null,
+          "duration_ms": 47,
+          "payload": {
+            "status": "SUCCEEDED",
+            "replan_count": 0,
+            "evidence": {
+              "sources": [],
+              "checks": []
+            },
+            "anomaly": {
+              "status": "NORMAL",
+              "findings": {},
+              "diagnosis": {
+                "status": "NOT_REQUESTED"
+              }
+            }
+          },
+          "reason_summary": null
+        }
+      ]
+    }
+  ]
+}

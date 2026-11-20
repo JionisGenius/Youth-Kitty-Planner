@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from functools import partial
 import logging
 from pathlib import Path
 import sqlite3
@@ -13,6 +14,7 @@ from .agents.memory import DEFAULT_CHECKPOINT, open_agent
 from .api.v1.routes import router
 from .core.errors import ApiProblem
 from .db.connection import DEFAULT_DATABASE, Database
+from .events.anomaly import assess_run
 from .events.logging_agent import LoggingAgent
 from .events.publisher import Publisher
 from .schemas.api import ApiError, ErrorDetail
@@ -37,7 +39,8 @@ def create_app(*, database_path=DEFAULT_DATABASE, checkpoint_path=DEFAULT_CHECKP
             except Exception:
                 log.warning("YKP event subscriber could not start")
         app.state.publisher = Publisher(*subscribers)
-        with open_agent(checkpoint_path, planner=planner, run_tool=run_tool) as agent:
+        with open_agent(checkpoint_path, planner=planner, run_tool=run_tool,
+                        assess=partial(assess_run, database)) as agent:
             app.state.agent = agent
             yield
 

@@ -111,7 +111,15 @@ def build_graph(planner, run_tool):
             fields = {"step_id": step.step_id, "tool_name": step.tool_name, "is_cached": key in cache}
             started = monotonic()
             if events:
-                events.emit("TOOL_REQUESTED", node="execute_tools", **fields)
+                try:
+                    validated = TOOLS[step.tool_name].input_model.model_validate(args)
+                    canonical_key = json.dumps(
+                        [step.tool_name, validated.model_dump(mode="json")], sort_keys=True, ensure_ascii=False,
+                    )
+                except ValidationError:
+                    canonical_key = key
+                events.emit("TOOL_REQUESTED", node="execute_tools", **fields,
+                            argument_fingerprint=events.fingerprint(canonical_key))
             if key in cache:
                 result = cache[key]
                 result = result.model_copy(update={"meta": result.meta.model_copy(update={"is_cached": True})})
@@ -275,7 +283,14 @@ def _instrument(node):
                 events.emit("NODE_FINISHED", node=name, start=started, outcome="FAILED")
             raise
         if events:
-            events.emit("NODE_FINISHED", node=name, start=started, outcome="COMPLETED")
+            payload = {}
+            if name == "execute_tools":
+                pending = {step.step_id for step in state["workflow_steps"] if step.status == "PENDING"}
+                payload["steps"] = [
+                    {"step_id": step.step_id, "tool_name": step.tool_name, "status": step.status}
+                    for step in output["workflow_steps"] if step.step_id in pending
+                ]
+            events.emit("NODE_FINISHED", node=name, start=started, outcome="COMPLETED", **payload)
         return output
 
     return wrapped

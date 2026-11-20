@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from hashlib import sha256
 import json
 import sqlite3
@@ -8,6 +9,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from backend.app.agents.graph import BUILDING
+from backend.app.agents.planner import GmsPlanner
 from backend.app.events.logging_agent import LoggingAgent
 from backend.app.main import create_app
 from backend.app.schemas.agent import Analysis, ConstraintPatch
@@ -270,6 +272,105 @@ def test_replan_terminal_events_and_failed_run(tmp_path):
         session = events[0]["session_id"]
         detail = client.get(PREFIX + f"/logs/{session}", headers=headers).json()
         assert detail["runs"][-1]["status"] == "FAILED" and detail["events"][-1]["event_type"] == "RUN_FAILED"
+
+
+@pytest.mark.parametrize(("case", "expected", "finding"), [
+    ("normal", "NORMAL", None),
+    ("missing_request", "UNKNOWN", None),
+    ("missing_fingerprint", "UNKNOWN", None),
+    ("duplicate", "ANOMALOUS", "DUPLICATE_TOOL_CALL"),
+    ("cached", "NORMAL", None),
+    ("replan_limit", "ANOMALOUS", "REPLAN_LIMIT_EXCEEDED"),
+    ("unplanned", "ANOMALOUS", "UNPLANNED_TOOL"),
+    ("mismatch", "ANOMALOUS", "WORKFLOW_EXECUTION_MISMATCH"),
+    ("diagnosis_429", "ANOMALOUS", "UNPLANNED_TOOL"),
+])
+def test_anomaly_assessment_uses_logged_evidence_and_keeps_chat(tmp_path, monkeypatch, case, expected, finding):
+    from backend.app.agents import planner as gms
+
+    diagnosis_requests = []
+    secret = "private_fixture_90215"
+
+    def mock_request(session, url, model, prompt, **options):
+        diagnosis_requests.append((prompt, options))
+        if case == "diagnosis_429":
+            return None, {"http": 429, "sensitive": secret}
+        return [{"type": "message", "content": [
+            {"type": "output_text", "text": '{"cause":"WORKFLOW_DISPATCH"}'},
+        ]}], {"http": 200}
+
+    monkeypatch.setattr(gms, "load_gms_config", lambda: (secret, "https://example.invalid/v1/responses", "fixture"))
+    monkeypatch.setattr(gms, "request", mock_request)
+
+    class DiagnosisPlanner(Planner, GmsPlanner):
+        pass
+
+    def logger_factory(database):
+        logger = LoggingAgent(database)
+
+        def log(event):
+            payload = event.payload.copy()
+            if event.event_type == "TOOL_REQUESTED":
+                assert len(payload["argument_fingerprint"]) == 64
+                assert "args" not in payload
+                if case == "missing_request":
+                    return
+                if case == "missing_fingerprint":
+                    payload.pop("argument_fingerprint")
+                if case in {"duplicate", "cached"} and payload["tool_name"] == "search_rental_transactions":
+                    payload["argument_fingerprint"] = "a" * 64
+            if case == "cached" and payload.get("step_id") == "r1-rent":
+                payload["is_cached"] = True
+            if case == "replan_limit" and event.event_type == "REPLAN_STARTED":
+                payload["replan_count"] = 4
+            if case in {"unplanned", "diagnosis_429"} and event.event_type == "WORKFLOW_CREATED":
+                first, *remaining = payload["steps"]
+                payload["steps"] = [{**first, "tool_name": BUILDING}, *remaining]
+            if case == "mismatch" and event.node_name == "execute_tools" and event.event_type == "NODE_FINISHED":
+                first, *remaining = payload["steps"]
+                payload["steps"] = [{**first, "status": "FAILED"}, *remaining]
+            logger(replace(event, payload=payload))
+
+        return log
+
+    replan = case in {"duplicate", "cached", "replan_limit"}
+    provider = Provider(rents={"11110": 800_000} if replan else None)
+    with open_client(tmp_path, planner=DiagnosisPlanner(create_plan(int(replan))), run_tool=provider,
+                     subscriber_factory=logger_factory) as client:
+        headers = auth(client)
+        result = chat(client, headers, BASE + " " + ALTERNATIVES + " " + secret)
+        assert result["status"] == "SUCCEEDED" and result["draft_plan"]
+        events = client.get(PREFIX + f"/runs/{result['run_id']}/events", headers=headers).json()
+        assert events[-1]["event_type"] == "RUN_FINISHED"
+        assessment = events[-1]["payload"]["anomaly"]
+        assert assessment["status"] == expected
+        assert any("이상 징후" in warning for warning in result["warnings"]) == bool(finding)
+        if finding:
+            assert assessment["findings"][finding]
+            assert set(assessment["findings"][finding]) <= {event["sequence"] for event in events[:-1]}
+            assert len(diagnosis_requests) == 1
+            prompt, options = diagnosis_requests[0]
+            assert finding in prompt and secret not in prompt
+            assert options["text_format"]["type"] == "json_schema"
+            assert assessment["diagnosis"] == (
+                {"status": "INCOMPLETE", "code": "RATE_LIMITED"} if case == "diagnosis_429"
+                else {"status": "COMPLETED", "cause": "WORKFLOW_DISPATCH"}
+            )
+        else:
+            assert assessment["findings"] == {}
+            assert assessment["diagnosis"] == {"status": "NOT_REQUESTED"}
+            assert diagnosis_requests == []
+        assert secret not in json.dumps(events)
+
+
+def test_tool_argument_fingerprints_only_correlate_within_a_run():
+    from backend.app.events.publisher import Publisher, RunEvents
+
+    a = RunEvents(Publisher(), uuid4(), uuid4())
+    b = RunEvents(Publisher(), uuid4(), a.session_id)
+    assert a.fingerprint("identical args") == a.fingerprint("identical args")
+    assert a.fingerprint("identical args") != b.fingerprint("identical args")
+    assert a.fingerprint("identical args") != a.fingerprint("different args")
 
 
 def test_owned_run_citations_and_cascade_are_server_controlled(tmp_path):

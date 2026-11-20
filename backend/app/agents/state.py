@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import TypedDict
+from dataclasses import dataclass, field
+from typing import Literal, TypedDict
 from uuid import UUID
 
 from ..schemas.agent import (
@@ -7,6 +7,16 @@ from ..schemas.agent import (
     SafeError, Source, UserConstraints, WorkflowStep,
 )
 from ..schemas.tools import RentalCandidate, ToolFailure, ToolSuccess
+
+
+@dataclass
+class RunAssessment:
+    status: Literal["NORMAL", "ANOMALOUS", "UNKNOWN"] = "UNKNOWN"
+    findings: dict[str, list[int]] = field(default_factory=dict)
+    diagnosis: dict[str, str] = field(default_factory=lambda: {"status": "NOT_REQUESTED"})
+
+    def payload(self):
+        return {"status": self.status, "findings": self.findings, "diagnosis": self.diagnosis}
 
 
 @dataclass(frozen=True)
@@ -51,3 +61,4 @@ class AgentState(TypedDict, total=False):
     successful_steps: list[str]
     failed_steps: list[str]
     replan_reason: str
+    run_assessment: RunAssessment
