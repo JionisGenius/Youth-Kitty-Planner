@@ -8,7 +8,7 @@
 |---|---|---|
 | 인증된 정상·빈·오류, 페이지, 실제 후보 연결 | `.venv/Scripts/python -m scripts.verify_external_apis --extended --match` | 0. [실행 결과 JSONL](phase-01-live.jsonl) |
 | 가짜 인증값의 실제 HTTP 오류 | `.venv/Scripts/python -m scripts.verify_external_apis --invalid-credentials` | 0. [인증 오류 JSONL](phase-01-invalid-auth.jsonl) |
-| 기존 및 신규 Mock·Unit | `.venv/Scripts/python -m pytest -q` | 0. [별도 테스트 출력](phase-01-tests.txt) |
+| 기존 및 신규 Mock·Unit | `.venv/Scripts/python -m pytest -q` | 0. [별도 테스트 출력](phase-01-final-tests.txt) |
 
 가짜 인증값 실행의 종료 0은 예상한 AUTH_FAILED 4건을 확인했다는 의미다. 수집된 JSONL은 Mock 없이 공식 제공자를 호출한 결과다. DTO 입출력 회귀, 비밀값 필터, 실제 서비스에서 유도하지 않은 429·5xx·타임아웃은 pytest 증거를 참조한다.
 

@@ -57,6 +57,6 @@ raise SystemExit(int(bool(known_hits or pattern_hits)))
 
 `git check-ignore -v -- .env .env.local backend/data/cache.sqlite .venv/ reports/evidence/raw/example.json`은 다섯 경로가 모두 제외됨을 확인했다. 예시 환경 파일은 커밋 후보에 포함된다.
 
-Tool 응답의 비밀값·원문 오류 제거와 HTTP 증거의 허용 필드·타입만 저장하는 동작을 별도 pytest로 검사했다. [테스트 결과](phase-01-tests.txt)
+Tool 응답의 비밀값·원문 오류 제거와 HTTP 증거의 허용 필드·타입만 저장하는 동작을 별도 pytest로 검사했다. [테스트 결과](phase-01-final-tests.txt)
 
 **REVIEW REQUIRED — 다음 단계 미착수**
