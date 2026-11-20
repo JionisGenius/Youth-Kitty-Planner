@@ -281,3 +281,32 @@ Mock으로 세션, 시작 질문, 채팅·조건 변경·출처, 계획과 작�
 - 8번과 13번은 기존 키 오류 화면에서 [제약값·역산과 계약·금융 전문가 안내를 직접 표시한 Chrome Mock 화면](evidence/checklist-judgment.png)으로 증빙을 교체했다.
 - 공식 원본 32개 항목은 통과 25, 실패 0, 미확인 3, 해당없음 4, 미기입 0이다. 필수 24/27이며 선택 심화 F3020은 통과했다.
 - 백엔드 pytest 79개, 프론트엔드 6개, Vue 프로덕션 빌드 모두 통과했다. 이번 작업은 실행 검증과 제출 증빙 보완이며 테스트 코드의 추가는 없다.
+
+## 공식 체크리스트 실제 화면 증빙
+
+2026-11-20 KST에 실행 결과를 다시 촬영했다. 원본 엑셀의 1~28번 H열에 실제 PNG 경로를 연결했다. 이 표는 같은 장면으로 입증하는 항목과 엑셀의 보조 화면을 묶어 보여준다. 29~32번과 기존 판정·집계 수식은 유지했다.
+
+| 항목 | 화면 | 확인 결과 |
+|---|---|---|
+| 1~4 | [Tool 실행](evidence/checklist-01-tool-validation.png) · [실제 외부 API](evidence/checklist-01-live-providers.png) | Registry 3종과 입력 스키마, 표준 오류, 격리 키 누락, 대체 계약월, 후보 전달, UNKNOWN과 빈 결과. 실제 API는 카카오 주소·키워드, 국토부 전월세 및 건축HUB 모두 HTTP 200이며 공공 API 내부 성공 코드도 확인했다. |
+| 5~7, 9~11, 23~24 | [Agent 대표 요청](evidence/checklist-06-agent-scenarios.png) · [전체 실행 로그](evidence/day-03-scenarios.json) | LangGraph 8개 노드, 실제 Tool 순서와 후속 조건 유지, 캐시 재사용, 실패 후 대화, 최대 3회 재계획. 다섯 Mock 요청의 최종 결과와 전체 시간은 아래에 기록했다. |
+| 8, 13 | [제약 판단·전문가 안내](evidence/checklist-judgment.png) | 월세·일정 계산, 관리비와 준비 기간의 역산 기준, 계약·금융 전문가 안내가 표시된 기존 Chrome 화면을 사용했다. |
+| 12 | [추천·제외 사유](evidence/checklist-12-recommendation.png) | 월세 상한을 초과한 후보의 제외 이유와 대체 후보의 과거 실거래 출처가 Chrome 답변에 표시됐다. |
+| 14~18 | [저장 이벤트와 테스트](evidence/checklist-14-agent-events.png) · [Swagger](evidence/checklist-docs.png) | 단계·Tool 순번과 소요 시간, 의도 판단, 두 세션 격리, 발행·저장 일치, 저장 장애 격리, 수집·저장 시 LLM 0회, 로그 조회·삭제, 로그 수정 경로 부재. |
+| 19~21 | [계획 저장·일정 충돌](evidence/checklist-19-plan-crud.png) · [삭제 후 목록](evidence/checklist-20-plan-deleted.png) · [Swagger](evidence/checklist-docs.png) | Chrome에서 충돌 경고와 함께 저장, 목록·상세 반영, 제목과 작업 수정·삭제를 확인했다. Vue API 응답은 POST 201, GET·PATCH 200, DELETE 204였다. |
+| 22 | [재계획 타임라인](evidence/checklist-22-replan-timeline.png) · [처리 중](evidence/checklist-loading.png) · [안전한 키 오류](evidence/checklist-api-key.png) | 저장 이벤트의 재계획·Tool 실패와 처리 중·키 누락 상태를 확인했다. Vue 캡처는 Mock GMS와 합성 Tool 데이터를 사용했다. |
+| 25, 27 | [제출 파일·보안 검사](evidence/checklist-25-submission.png) · [회귀 테스트·빌드](evidence/checklist-23-regression.png) | 제출 파일 실제 경로와 출력 안전성, 백엔드 79개·프론트엔드 6개·Vue 빌드 성공을 확인했다. 27번의 팀 공식 1일 차 검증 증거는 미확인이다. |
+| 26 | [카카오 공개 쿼터](evidence/checklist-26-public-quota.png) · [공개 이용 조건](../README.md) | 제공자 공개 조건을 확인했다. 실제 계정의 카카오 권한·적용 쿼터와 공공데이터 두 API의 활용 승인·기간·적용량은 각 관리 화면의 확인이 필요하다. |
+| 28 | [F3020 실제 실행](evidence/checklist-28-anomaly.png) | 합성 이벤트를 이용한 규칙·통합 테스트 9개를 실행했다. 별도 실제 GMS 진단은 HTTP 200, 3,875ms, 분류 WORKFLOW_DISPATCH였다. 정상과 판정 불가에는 진단 호출이 없었다. |
+
+| 대표 요청 (Mock) | 실제 결과 | Tool 호출 | 재계획 | 실행 이벤트 | HTTP 전체 |
+|---|---|---:|---:|---:|---:|
+| 처음부터 충족 | SUCCEEDED | 3 | 0 | 25 | 148ms |
+| 불충족 후 재계획 | SUCCEEDED, 월세 FAIL → PASS | 4 | 1 | 40 | 211ms |
+| 재계획 상한 | EXHAUSTED | 4 | 3 | 69 | 360ms |
+| 단일 Tool 실패 | PARTIAL, 정상 결과 유지 | 3 | 0 | 25 | 144ms |
+| 일반 대화 | SUCCEEDED | 0 | 0 | 7 | 82ms |
+
+다섯 요청 모두 기대한 분기와 일치했다. Mock은 로컬 시험용이므로 실제 사용자 대기 평가와 평균하지 않았다. 위의 기존 실제 GMS 포함 브라우저 측정은 7.5~19.3초였고, 대상 사용자 관점의 대기 적정성 확인이 남아 23번을 미확인으로 유지했다.
+
+`python -m pytest -q`, `npm.cmd --prefix frontend test`, `npm.cmd --prefix frontend run build`의 종료 코드는 모두 0이다. G/H/I열과 증빙 경로를 검증했다. 공식 집계는 필수 24/27, F3020 포함 통과 25개, 실패 0개, 미확인 3개(23·26·27), 해당없음 4개, 미기입 0개다. 신규 소스와 테스트 파일은 없다.
