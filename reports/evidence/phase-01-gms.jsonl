@@ -1,0 +1,6 @@
+{"check": "connection", "mode": "LIVE", "configured_model": "gpt-6.1-sol", "text_check": true, "passed": true, "http": 200, "response_status": "completed", "model_id_match": true, "elapsed_ms": 2203}
+{"check": "registered_tools", "mode": "LOCAL", "tools": ["search_location", "search_rental_transactions", "get_building_detail"]}
+{"check": "location", "mode": "LIVE", "passed": true, "http": 200, "response_status": "completed", "model_id_match": true, "elapsed_ms": 2406, "selected_tools": ["search_location"], "validation": ["VALID"], "expected_arguments_match": true}
+{"check": "rental", "mode": "LIVE", "passed": true, "http": 200, "response_status": "completed", "model_id_match": true, "elapsed_ms": 2094, "selected_tools": ["search_rental_transactions"], "validation": ["VALID"], "expected_arguments_match": true}
+{"check": "building", "mode": "LIVE", "passed": true, "http": 200, "response_status": "completed", "model_id_match": true, "elapsed_ms": 2391, "selected_tools": ["get_building_detail"], "validation": ["VALID"], "expected_arguments_match": true}
+{"check": "no_tool", "mode": "LIVE", "passed": true, "http": 200, "response_status": "completed", "model_id_match": true, "elapsed_ms": 2484, "selected_tools": [], "validation": [], "text_present": true}

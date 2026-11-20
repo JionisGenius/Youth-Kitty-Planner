@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.db*
+*.sqlite*
+*.log
+backend/data/
+reports/evidence/raw/
+node_modules/
+dist/
+/AI코어프로젝트_3회차_요구사항정의서*.pdf

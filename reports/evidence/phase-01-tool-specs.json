@@ -1,0 +1,222 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_location",
+      "description": "\uc8fc\uc18c\ub97c \uc88c\ud45c\u00b7\uc9c0\uc5ed \ucf54\ub4dc\ub85c \ud655\uc778\ud558\uac70\ub098 \ud0a4\uc6cc\ub4dc\ub85c \uc8fc\ubcc0 \uc7a5\uc18c\ub97c \ucc3e\uc744 \ub54c \uc0ac\uc6a9\ud569\ub2c8\ub2e4.",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "ADDRESS",
+              "KEYWORD"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "limit": {
+            "default": 5,
+            "maximum": 15,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query",
+          "mode"
+        ],
+        "title": "LocationInput",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_rental_transactions",
+      "description": "\uc9c0\uc5ed\uacfc \uacc4\uc57d\uc6d4\uc758 \uacfc\uac70 \uc5f0\ub9bd\ub2e4\uc138\ub300 \uc784\ub300\ucc28 \uc0ac\ub840\ub97c \ube44\uad50\ud560 \ub54c \uc0ac\uc6a9\ud569\ub2c8\ub2e4.",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "sigungu_code": {
+            "pattern": "^[0-9]{5}$",
+            "title": "Sigungu Code",
+            "type": "string"
+          },
+          "contract_month": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{4}(0[1-9]|1[0-2])$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Contract Month"
+          },
+          "max_deposit_krw": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Max Deposit Krw"
+          },
+          "max_monthly_rent_krw": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Max Monthly Rent Krw"
+          },
+          "limit": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sigungu_code"
+        ],
+        "title": "RentalInput",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_building_detail",
+      "description": "\uacfc\uac70 \uacc4\uc57d \ud6c4\ubcf4\uc758 \uc9c0\ubc88\uacfc \uac74\ubb3c\uba85\uc744 \ud45c\uc81c\ubd80\uc640 \ub300\uc870\ud560 \ub54c \uc0ac\uc6a9\ud569\ub2c8\ub2e4.",
+      "parameters": {
+        "additionalProperties": false,
+        "properties": {
+          "candidate_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Candidate Id",
+            "type": "string"
+          },
+          "sigungu_code": {
+            "pattern": "^[0-9]{5}$",
+            "title": "Sigungu Code",
+            "type": "string"
+          },
+          "bjdong_code": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{5}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Bjdong Code"
+          },
+          "lot_address": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Lot Address"
+          },
+          "parcel_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "0",
+                  "1",
+                  "2"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Parcel Type"
+          },
+          "bun": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{1,4}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Bun"
+          },
+          "ji": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{1,4}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Ji"
+          },
+          "building_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Building Name"
+          }
+        },
+        "required": [
+          "candidate_id",
+          "sigungu_code"
+        ],
+        "title": "BuildingInput",
+        "type": "object"
+      }
+    }
+  }
+]

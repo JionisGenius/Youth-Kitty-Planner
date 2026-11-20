@@ -1,0 +1,8 @@
+{
+  "name": "youth-kitty-planner",
+  "private": true,
+  "type": "module",
+  "scripts": {"dev": "vite", "build": "vite build", "test": "node --test"},
+  "dependencies": {"vue": "^3.5.0", "vue-router": "^4.5.0"},
+  "devDependencies": {"vite": "^7.0.0", "@vitejs/plugin-vue": "^6.0.0"}
+}
