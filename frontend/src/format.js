@@ -12,9 +12,34 @@ export function evaluationValue(rule, value) {
   return rule === 'COMMUTE_TIME' ? `${value}분` : value
 }
 const day = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', weekday: 'short' })
+const dateWithYear = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: 'long', day: 'numeric' })
 const clock = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 export const dayLabel = (value) => day.format(new Date(value))
-export const clockTime = (value) => clock.format(new Date(value))
+
+export function taskTimeRange(start, end) {
+  if (!start || !end) return '시간 미정'
+  const first = new Date(start)
+  const last = new Date(end)
+  const firstDate = dateWithYear.format(first)
+  const lastDate = dateWithYear.format(last)
+  const firstTime = clock.format(first)
+  const lastTime = clock.format(last)
+  return firstDate === lastDate
+    ? `${firstTime} ~ ${lastTime} KST`
+    : `${firstDate} ${firstTime} ~ ${lastDate} ${lastTime} KST`
+}
+
+export function groupPlanSources(sources) {
+  const groups = new Map()
+  for (const source of sources) {
+    const key = JSON.stringify([source.provider, source.source_url, source.source_type])
+    if (!groups.has(key)) groups.set(key, { ...source, count: 0, caveats: new Set() })
+    const group = groups.get(key)
+    group.count++
+    if (source.caveat) group.caveats.add(source.caveat)
+  }
+  return [...groups.values()]
+}
 
 export const statuses = {
   SUCCEEDED: '완료', PARTIAL: '일부 확인', NEEDS_INPUT: '입력 필요', FAILED: '실패', RUNNING: '진행 중',

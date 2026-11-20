@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 import json
-from uuid import uuid4
+from uuid import UUID, uuid4, uuid5
 
 from pydantic import ValidationError
 
@@ -76,7 +76,7 @@ def _overlaps(conn, plan):
     return [{"code": "TIME_OVERLAP", **dict(row)} for row in rows]
 
 
-def _read(conn, plan):
+def _read(conn, plan, session):
     data = plan.copy()
     plan_id = (plan["id"],)
     data["constraints"] = json.loads(data.pop("constraints_json"))
@@ -91,6 +91,12 @@ def _read(conn, plan):
             value = item.pop(f"{field}_json")
             item[f"{field}_value"] = json.loads(value) if value is not None else None
         evaluations.append(item)
+    if not evaluations and data["sources"] and plan["generated_by_run_id"]:
+        constraints = UserConstraints.model_validate(data["constraints"])
+        source_ids = {source["source_ref"]: source["id"] for source in data["sources"]}
+        _, checks = plan_evidence(conn, session, plan["generated_by_run_id"], constraints,
+                                  plan["planning_start_date"], plan["planning_end_date"], source_ids)
+        evaluations = _evaluation_rows(plan["id"], constraints, source_ids, checks, plan["created_at"])
     data["evaluations"] = evaluations
     data["warnings"] = _overlaps(conn, plan)
     return data
@@ -105,7 +111,8 @@ def create_plan(database, session, data):
             run = owned_run(conn, session.id, run_id)
             if run["status"] in {"RUNNING", "FAILED", "NEEDS_INPUT"}:
                 raise invalid("저장할 수 있는 완료된 실행을 지정해 주세요.")
-        sources, checks = plan_evidence(conn, session, data)
+        sources, checks = plan_evidence(conn, session, run_id, data.constraints, data.planning_start_date,
+                                       data.planning_end_date, data.source_refs)
         conn.execute(
             """INSERT INTO plans (id, session_id, title, category, planning_start_date, planning_end_date,
                    work_location_label, constraints_json, generated_by_run_id, created_at, updated_at)
@@ -118,7 +125,7 @@ def create_plan(database, session, data):
         for order, task in enumerate(data.tasks):
             _add_task(conn, plan, task, stamp, order)
         _save_evidence(conn, plan_id, data.constraints, sources, checks, stamp)
-        return _read(conn, plan)
+        return _read(conn, plan, session)
 
 
 def _save_evidence(conn, plan_id, constraints, sources, checks, stamp):
@@ -132,6 +139,18 @@ def _save_evidence(conn, plan_id, constraints, sources, checks, stamp):
             (ids[source["ref"]], plan_id, source["provider"], source["ref"], source["url"],
              source["fetched_at"], source["observed_at"], source["caveat"]),
         )
+    for item in _evaluation_rows(plan_id, constraints, ids, checks, stamp):
+        value = item["expected_value"]
+        conn.execute(
+            """INSERT INTO plan_evaluations
+                   (id, plan_id, rule_code, status, expected_json, reason_code, source_id, checked_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (item["id"], plan_id, item["rule_code"], item["status"], json.dumps(value) if value is not None else None,
+             item["reason_code"], item["source_id"], item["checked_at"]),
+        )
+
+
+def _evaluation_rows(plan_id, constraints, source_ids, checks, checked_at):
     expected = {
         "HISTORICAL_DEPOSIT": constraints.max_deposit_krw,
         "HISTORICAL_RENT": constraints.max_monthly_rent_krw,
@@ -139,39 +158,47 @@ def _save_evidence(conn, plan_id, constraints, sources, checks, stamp):
         "COMMUTE_TIME": constraints.max_commute_minutes,
         "PLAN_TIMELINE": constraints.job_start_date.isoformat() if constraints.job_start_date else None,
     }
-    for check in checks:
-        source_id = ids[check["refs"][0]] if check["refs"] else None
-        limit = expected.get(check["rule"])
-        conn.execute(
-            """INSERT INTO plan_evaluations
-                   (id, plan_id, rule_code, status, expected_json, reason_code, source_id, checked_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (str(uuid4()), plan_id, check["rule"], check["status"], json.dumps(limit) if limit is not None else None,
-             check["reason"], source_id, stamp),
-        )
+    plan_uuid = UUID(plan_id)
+    return [
+        {
+            "id": str(uuid5(plan_uuid, f"{check['rule']}:{index}")),
+            "plan_id": plan_id,
+            "candidate_id": None,
+            "rule_code": check["rule"],
+            "status": check["status"],
+            "expected_value": expected.get(check["rule"]),
+            "observed_value": None,
+            "reason_code": check["reason"],
+            "source_id": source_ids[check["refs"][0]] if check["refs"] else None,
+            "checked_at": checked_at,
+        }
+        for index, check in enumerate(checks)
+    ]
 
 
-def get_plan(database, session_id, plan_id):
+def get_plan(database, session, plan_id):
     with database.connect() as conn:
-        return _read(conn, owned_plan(conn, session_id, plan_id))
+        return _read(conn, owned_plan(conn, session.id, plan_id), session)
 
 
-def list_plans(database, session_id, limit, offset):
+def list_plans(database, session, limit, offset):
     with database.connect() as conn:
+        session_id = session.id
         rows = conn.execute(
             "SELECT * FROM plans WHERE session_id = ? ORDER BY updated_at DESC, id LIMIT ? OFFSET ?",
             (str(session_id), limit, offset),
         ).fetchall()
         total = conn.execute("SELECT COUNT(*) FROM plans WHERE session_id = ?", (str(session_id),)).fetchone()[0]
-        return {"items": [_read(conn, dict(row)) for row in rows], "total": total, "limit": limit, "offset": offset}
+        return {"items": [_read(conn, dict(row), session) for row in rows], "total": total, "limit": limit, "offset": offset}
 
 
 def _work_label(constraints):
     return constraints.work_location.label if constraints.work_location else None
 
 
-def update_plan(database, session_id, plan_id, data):
+def update_plan(database, session, plan_id, data):
     with database.connect(write=True) as conn:
+        session_id = session.id
         plan = owned_plan(conn, session_id, plan_id)
         if plan["revision_number"] != data.expected_revision_number:
             raise ApiProblem(409, "REVISION_CONFLICT", "계획이 변경되었습니다. 최신 버전을 확인해 주세요.")
@@ -191,7 +218,7 @@ def update_plan(database, session_id, plan_id, data):
             (data.title or plan["title"], constraints.model_dump_json(), _work_label(constraints),
              stamp, plan["id"], str(session_id)),
         )
-        return _read(conn, owned_plan(conn, session_id, plan_id))
+        return _read(conn, owned_plan(conn, session_id, plan_id), session)
 
 
 def _apply_task_operation(conn, plan, op, stamp):

@@ -1,7 +1,26 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createApi, errorMessage } from '../src/api.js'
-import { kstInput, taskEditor, taskPayload } from '../src/format.js'
+import { groupPlanSources, kstInput, taskEditor, taskPayload, taskTimeRange } from '../src/format.js'
+
+test('shows both KST dates for a task spanning multiple days', () => {
+  assert.equal(taskTimeRange('2026-11-20T07:51:40Z', '2026-11-27T07:51:44Z'),
+    '2026년 11월 20일 16:51 ~ 2026년 11월 27일 16:51 KST')
+  assert.equal(taskTimeRange('2026-11-20T07:51:40Z', '2026-11-20T08:51:44Z'), '16:51 ~ 17:51 KST')
+  assert.equal(taskTimeRange(null, null), '시간 미정')
+})
+
+test('groups repeated official source links and preserves counts and distinct caveats', () => {
+  const rent = { provider: 'MOLIT_RENT', source_type: 'OFFICIAL_API', source_url: 'https://example.test/rent', caveat: '과거 거래' }
+  const groups = groupPlanSources([
+    { ...rent, id: '1' }, { ...rent, id: '2' }, { ...rent, id: '3', caveat: '현재 임대 여부 미확인' },
+    { ...rent, id: '4', source_url: 'https://example.test/other' },
+    { ...rent, id: '5', provider: 'BUILDING_HUB' },
+  ])
+  assert.deepEqual(groups.map(group => [group.id, group.count, [...group.caveats]]), [
+    ['1', 3, ['과거 거래', '현재 임대 여부 미확인']], ['4', 1, ['과거 거래']], ['5', 1, ['과거 거래']],
+  ])
+})
 
 function fixture(fetcher, clock = () => 0) {
   const values = new Map()

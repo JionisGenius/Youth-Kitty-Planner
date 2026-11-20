@@ -4,12 +4,14 @@ import json
 from uuid import uuid5
 
 from ..core.errors import invalid
+from .constraint_engine import preparation_end
 
 PROVIDERS = {
     "molit_rent": ("MOLIT_RENT", "https://www.data.go.kr/data/15126473/openapi.do"),
     "building_hub": ("BUILDING_HUB", "https://www.data.go.kr/data/15134735/openapi.do"),
     "kakao_local": ("KAKAO_LOCAL", "https://developers.kakao.com/docs/ko/local/dev-guide"),
 }
+DATE_INDEPENDENT_CHECKS = {"HISTORICAL_DEPOSIT", "HISTORICAL_RENT", "CURRENT_LISTING", "BUILDING_MATCH"}
 
 
 def _scope(session, run_id, constraints, start, end):
@@ -46,22 +48,29 @@ def evidence_for_run(session, result):
     return aliases, {"scope": scope, "sources": sources, "checks": checks}
 
 
-def plan_evidence(conn, session, data):
-    if data.generated_by_run_id is None:
+def plan_evidence(conn, session, run_id, constraints, start, end, source_refs):
+    if run_id is None:
         return [], []
     row = conn.execute(
         """SELECT e.payload_json FROM run_events e JOIN agent_runs r ON r.id = e.run_id
            WHERE r.id = ? AND r.session_id = ? AND e.event_type = 'RUN_FINISHED'
            ORDER BY e.sequence DESC LIMIT 1""",
-        (str(data.generated_by_run_id), str(session.id)),
+        (str(run_id), str(session.id)),
     ).fetchone()
     evidence = json.loads(row[0]).get("evidence", {}) if row else {}
     available = {source["ref"]: source for source in evidence.get("sources", [])}
-    refs = [str(ref) for ref in data.source_refs] if data.source_refs is not None else list(available)
+    refs = [str(ref) for ref in source_refs] if source_refs is not None else list(available)
     if any(ref not in available for ref in refs):
         raise invalid("이 실행에서 확인한 출처만 저장할 수 있습니다.")
-    scope = _scope(session, data.generated_by_run_id, data.constraints, data.planning_start_date, data.planning_end_date)
-    checks = evidence.get("checks", []) if compare_digest(evidence.get("scope") or "", scope) else []
+    scope = _scope(session, run_id, constraints, start, end)
+    recorded_scope = evidence.get("scope") or ""
+    checks = evidence.get("checks", [])
+    if not compare_digest(recorded_scope, scope):
+        # The draft dates are derived from the original constraints. Only date-independent
+        # results survive when the saved dates differ but those constraints still match.
+        draft_scope = _scope(session, run_id, constraints, constraints.planning_start_date, preparation_end(constraints))
+        checks = ([check for check in checks if check["rule"] in DATE_INDEPENDENT_CHECKS]
+                  if compare_digest(recorded_scope, draft_scope) else [])
     selected = set(refs)
     return [available[ref] for ref in refs], [check for check in checks if set(check["refs"]) <= selected]
 

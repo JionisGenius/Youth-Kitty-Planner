@@ -5,7 +5,7 @@ import TaskFields from '../components/TaskFields.vue'
 import UiIcon from '../components/UiIcon.vue'
 import { api, conversation, session } from '../state.js'
 import { errorMessage } from '../api.js'
-import { clockTime, dayLabel, money, providers, rules, statuses, taskEditor, taskPayload, timestamp } from '../format.js'
+import { dayLabel, groupPlanSources, money, providers, rules, statuses, taskEditor, taskPayload, taskTimeRange, timestamp } from '../format.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,6 +26,9 @@ const deletingPlan = ref(false)
 const form = ref(null)
 const panelTitle = ref(null)
 const taskTitle = ref(null)
+const groupedSources = computed(() => groupPlanSources(detail.value?.sources ?? []))
+const calendarDays = computed(() => detail.value &&
+  (Date.parse(detail.value.planning_end_date) - Date.parse(detail.value.planning_start_date)) / 86_400_000 + 1)
 const taskGroups = computed(() => {
   const tasks = [...(detail.value?.tasks ?? [])].sort((a, b) =>
     a.task_date.localeCompare(b.task_date) ||
@@ -250,13 +253,13 @@ function removePlan() {
 
       <template v-else-if="detail">
         <div class="detail-heading">
-          <div><h2 ref="panelTitle" tabindex="-1">{{ detail.title }}</h2><p class="muted">{{ detail.planning_start_date }} ~ {{ detail.planning_end_date }} · 버전 {{ detail.revision_number }}</p><small>생성 {{ timestamp(detail.created_at) }}</small></div>
+          <div><h2 ref="panelTitle" tabindex="-1">{{ detail.title }}</h2><p class="muted">계획 기간 {{ detail.planning_start_date }} ~ {{ detail.planning_end_date }} ({{ calendarDays }}일) · 버전 {{ detail.revision_number }}</p><small>생성 {{ timestamp(detail.created_at) }}</small></div>
           <RouterLink class="text-link" :to="{ path: '/', query: { plan: detail.id } }">계획 이어서 상담 <span aria-hidden="true">↗</span></RouterLink>
         </div>
         <dl class="metrics plan-metrics">
           <div><dt>보증금 상한</dt><dd>{{ money(detail.constraints?.max_deposit_krw) }}</dd></div>
           <div><dt>월세 상한</dt><dd>{{ money(detail.constraints?.max_monthly_rent_krw) }}</dd></div>
-          <div><dt>준비 기간</dt><dd>{{ detail.constraints?.preparation_days == null ? '미정' : detail.constraints.preparation_days + '일' }}</dd></div>
+          <div><dt>요청한 준비 기간</dt><dd>{{ detail.constraints?.preparation_days == null ? '미정' : detail.constraints.preparation_days + '일' }}</dd></div>
         </dl>
         <div v-if="detail.warnings.length" class="warning-box" role="status">
           <strong class="notice-heading"><UiIcon name="warning" />겹치는 일정 {{ detail.warnings.length }}건</strong>
@@ -295,7 +298,7 @@ function removePlan() {
                     <span :class="['chip', task.status.toLowerCase()]">{{ statuses[task.status] }}</span>
                     <span v-if="overlappingTasks.has(task.id)" class="chip unknown">시간 확인 필요</span>
                   </div>
-                  <p>{{ task.scheduled_start_at ? clockTime(task.scheduled_start_at) + ' ~ ' + clockTime(task.scheduled_end_at) + ' KST' : '시간 미정' }}</p>
+                  <p>{{ taskTimeRange(task.scheduled_start_at, task.scheduled_end_at) }}</p>
                   <p v-if="task.description">{{ task.description }}</p>
                 </div>
                 <div class="actions task-actions">
@@ -313,14 +316,17 @@ function removePlan() {
         </form>
         <section v-if="detail.sources.length || detail.evaluations.length" class="plan-evidence">
           <h3>출처와 판정</h3>
-          <ul><li v-for="source in detail.sources" :key="source.id">
+          <ul v-if="groupedSources.length"><li v-for="source in groupedSources" :key="source.id">
             <a v-if="source.source_url?.startsWith('https://')" :href="source.source_url" target="_blank" rel="noopener noreferrer">{{ providers[source.provider] ?? source.provider }}</a>
-            <span v-else>{{ providers[source.provider] ?? source.provider }}</span> <small v-if="source.caveat"> · {{ source.caveat }}</small>
+            <span v-else>{{ providers[source.provider] ?? source.provider }}</span>
+            <small v-if="source.count > 1"> · 증빙 {{ source.count }}건</small>
+            <small v-for="caveat in source.caveats" :key="caveat"> · {{ caveat }}</small>
           </li></ul>
-          <ul class="checks"><li v-for="item in detail.evaluations" :key="item.id">
+          <ul v-if="detail.evaluations.length" class="checks"><li v-for="item in detail.evaluations" :key="item.id">
             <span>{{ rules[item.rule_code] ?? item.rule_code }}</span>
             <span :class="['chip', item.status.toLowerCase()]">{{ statuses[item.status] ?? item.status }}</span>
           </li></ul>
+          <p v-else class="muted">이 계획에 적용할 수 있는 검증 판정이 없습니다.</p>
         </section>
       </template>
       <div v-else-if="!detailLoading && !error" class="empty detail-empty">

@@ -408,6 +408,33 @@ def test_rejects_invalid_dto_without_echo(tmp_path):
         assert client.post(PREFIX + "/plans", headers=headers, json=plan_data(event)).status_code == 422
 
 
+def test_saved_dates_keep_only_applicable_evaluations_and_recover_old_plans(tmp_path):
+    with open_client(tmp_path, planner=Planner(create_plan(planning_start_date=None)), run_tool=Provider()) as client:
+        headers = auth(client)
+        reply = chat(client, headers)
+        draft = reply["draft_plan"]
+        assert draft["planning_start_date"] is None and draft["planning_end_date"] is None
+        assert any(item["rule_code"] == "PLAN_TIMELINE" for item in draft["evaluations"])
+        body = {**plan_data(), "constraints": draft["constraints"], "source_refs": draft["source_refs"],
+                "generated_by_run_id": reply["run_id"]}
+        plan = save(client, headers, body)
+        assert {item["rule_code"] for item in plan["evaluations"]} == {
+            "HISTORICAL_DEPOSIT", "HISTORICAL_RENT", "CURRENT_LISTING", "BUILDING_MATCH",
+        }
+        assert len(plan["sources"]) == 3
+
+        with client.app.state.database.connect(write=True) as conn:
+            conn.execute("DELETE FROM plan_evaluations WHERE plan_id = ?", (plan["id"],))
+        path = PREFIX + "/plans/" + plan["id"]
+        assert client.get(path, headers=headers).json()["evaluations"] == plan["evaluations"]
+        assert client.get(PREFIX + "/plans", headers=headers).json()["items"][0]["evaluations"] == plan["evaluations"]
+
+        changed = client.patch(path, headers=headers, json={"expected_revision_number": plan["revision_number"],
+                               "constraints": {**draft["constraints"], "max_monthly_rent_krw": 400_000}})
+        assert changed.status_code == 200
+        assert changed.json()["evaluations"] == []
+
+
 
 def test_owned_base_plan_and_sqlite_restart(tmp_path):
     constraints = create_plan().patch.model_dump(mode="json", exclude_none=True)

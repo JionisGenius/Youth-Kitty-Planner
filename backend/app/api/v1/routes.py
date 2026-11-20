@@ -134,17 +134,17 @@ def new_plan(request: Request, data: PlanCreate, session: CurrentSession):
 
 @router.get("/plans", response_model=PlanList, tags=["Plans"])
 def get_plans(request: Request, session: CurrentSession, page: Page):
-    return plans.list_plans(request.app.state.database, session.id, page.limit, page.offset)
+    return plans.list_plans(request.app.state.database, session, page.limit, page.offset)
 
 
 @router.get("/plans/{plan_id}", response_model=PlanRead, tags=["Plans"])
 def get_plan(request: Request, plan_id: UUID, session: CurrentSession):
-    return plans.get_plan(request.app.state.database, session.id, plan_id)
+    return plans.get_plan(request.app.state.database, session, plan_id)
 
 
 @router.patch("/plans/{plan_id}", response_model=PlanRead, tags=["Plans"])
 def patch_plan(request: Request, plan_id: UUID, data: PlanUpdate, session: CurrentSession):
-    return plans.update_plan(request.app.state.database, session.id, plan_id, data)
+    return plans.update_plan(request.app.state.database, session, plan_id, data)
 
 
 @router.delete("/plans/{plan_id}", status_code=204, tags=["Plans"])
