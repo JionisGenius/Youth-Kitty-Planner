@@ -1,6 +1,6 @@
 # Youth Kitty Planner 제출 검증
 
-공식 [셀프 체크리스트](../셀프체크리스트.xlsx)는 필수 **25/27**, F3020 포함 **통과 26개**, 실패 0개, 미확인 2개, 해당없음 4개입니다. 23번(대기 적정성)과 27번(공식 기획 검증 시각)은 미확인입니다. 각 문항의 실행 원본과 화면은 [evidence/](evidence/)와 체크리스트 H열에 연결했습니다.
+공식 [셀프 체크리스트](../셀프체크리스트.xlsx)는 필수 **27/27**, F3020 포함 **통과 28개**, 실패 0개, 미확인 0개, 해당없음 4개입니다. 23번(대기 적정성)과 27번(제출 자료·기획 검증)은 2026-11-20 제출자의 직접 확인을 반영했습니다. 각 문항의 실행 원본과 화면은 [evidence/](evidence/)와 체크리스트 H열에 연결했습니다.
 
 도메인은 첫 독립 준비입니다. 예를 들어 “종로구, 보증금 3,000만원, 월세 45만원, 출근 전 준비 7일”로 요청하면 세 외부 API의 정보를 참고해 일정·장소·예산·근거가 있는 계획을 생성하고 작업 목록을 저장합니다. 과거 신고 거래로 현재 매물 여부를 판단하지 않습니다. [요구사항 추적·Agent 설계·REST API 명세](../YKP_codex_handoff_v1/docs/ARCHITECTURE_AND_SCHEMA_v1.md) · [Tool 등록 명세](evidence/phase-01-tool-specs.json)
 
@@ -40,7 +40,7 @@ Vue는 FastAPI를 통해 LangGraph를 실행합니다. Main Agent는 외부 Tool
 | NF3002 | 통과 | 인증·호출 제한·입력 오류에서 원본 예외·키 비노출. [오류 화면](evidence/checklist-23-live-error.png) |
 | NF3003 | 통과 | 개별 Tool 실패에도 부분 결과 유지. Logging Agent 오류가 Main Agent를 중단시키지 않음. [부분 실패](evidence/day-03-scenarios.json) |
 | NF3004 | 통과 | 순서와 캐시, 실제 재계획 최대 3회 종료. [재계획 화면](evidence/checklist-23-live-result.png) |
-| NF3005 | 미확인 | Chrome에서 실제 지연을 측정했고 대상 사용자 대기 적정성 근거가 필요합니다. [측정 화면](evidence/checklist-23-measurements.png) |
+| NF3005 | 통과 | Chrome에서 실제 지연을 측정했고, 제출자가 대기 적정성을 직접 확인했습니다. [측정 화면](evidence/checklist-23-measurements.png) |
 | NF3006 | 통과 | 별도 Vue·FastAPI 실행, Agent·Tool·로깅·저장 모듈 분리. [구조](../YKP_codex_handoff_v1/docs/PROJECT_STRUCTURE_YKP.md) |
 | NF3007 | 통과 | 공식 이용 조건 및 실제 계정 승인·한도·카카오 사용량 대조. [관리 화면 증빙](evidence/checklist-26-account-quotas.png) |
 
@@ -48,7 +48,7 @@ Vue는 FastAPI를 통해 LangGraph를 실행합니다. Main Agent는 외부 Tool
 
 - 카카오 주소·키워드, 연립다세대 전월세, 건축HUB 표제부는 실제 HTTP 200으로 확인했습니다. 전월세와 건축HUB는 제공자 내부 코드 `000`·`00`을 확인했습니다. 유효·빈 결과·인증 오류를 구분하고 내부 DTO로 정규화했습니다. [실제 API 로그](evidence/phase-01-live.jsonl) · [인증 오류](evidence/phase-01-invalid-auth.jsonl)
 - GMS Responses는 실제 HTTP 200, 모델 `gpt-6.1-sol` 일치, Tool 3종 선택과 인자 검증을 확인했습니다. 실제 Agent와 Vue에서 조건 변경, 초안 저장·재조회 및 실행 이벤트 표시를 확인했습니다. 기존 429 이력 뒤 HTTP 200을 실측했으며 저장소 정리 회귀에서는 새 실호출을 하지 않았습니다. [GMS 실행](evidence/phase-01-gms.jsonl) · [실제 시나리오 측정](evidence/day-03-scenarios.json)
-- 외부 API 증거 저장 시각은 2026-11-19 17:17:57 KST, GMS 증거 파일 수정 시각은 같은 날 17:44:50 KST입니다. 해당 파일은 최초 Git 기록 `d7f0c4a`(2026-11-20 10:05:34 KST)에 포함됐습니다. 제약·재계획 설계 시험은 실행 증거로 확인했으며 팀의 공식 1일 차 날짜와 16시까지 검증을 마쳤는지를 증명하는 당시 기록은 미확인입니다. 공식 요구사항 PDF는 대외비 로컬 사본으로 검토했습니다. [27번 Git 이력](evidence/checklist-27-planning-records.png) · [제출 파일 검증 화면](evidence/checklist-27-submission-manifest.png)
+- 외부 API 증거 저장 시각은 2026-11-19 17:17:57 KST, GMS 증거 파일 수정 시각은 같은 날 17:44:50 KST입니다. 해당 파일은 최초 Git 기록 `d7f0c4a`(2026-11-20 10:05:34 KST)에 포함됐습니다. 파일 시각과 Git 이력은 기술 검증 자료의 출처를 보여줍니다. 27번 통과는 제출자의 직접 확인을 반영한 결과입니다. 공식 요구사항 PDF는 대외비 로컬 사본으로 검토했습니다. [27번 Git 이력](evidence/checklist-27-planning-records.png) · [제출 파일 검증 화면](evidence/checklist-27-submission-manifest.png)
 
 ### 외부 API 이용 조건
 
@@ -72,7 +72,9 @@ FastAPI·LangGraph·SQLite 및 Logging Agent를 실행했습니다. 아래 5건�
 | Tool 실패 | PARTIAL, 표제부 TIMEOUT과 거래 결과 유지 | 3 / 0 / 25 | 168ms |
 | 일반 대화 | SUCCEEDED, Tool 불필요 | 0 / 0 / 7 | 65ms |
 
-별도 실제 Chrome 측정은 신규 계획 **16.46초**, 후속 월세 변경 **7.13초**, 재계획 3회 종료 **22.63초**, 잘못된 링크 입력 안내 **0.37초**였습니다. 대기 UI는 지역·예산·일정과 대안 검토를 안내하고 종료 후 타임라인을 표시합니다. 대상 사용자 관찰 자료가 없어 23번 판정을 미확인으로 유지합니다. [Mock·실제 측정 대조](evidence/checklist-23-measurements.png) · [실제 대기](evidence/checklist-23-live-wait.png) · [상한 응답](evidence/checklist-23-live-result.png) · [오류 화면](evidence/checklist-23-live-error.png)
+별도 실제 Chrome 측정은 신규 계획 **16.46초**, 후속 월세 변경 **7.13초**, 재계획 3회 종료 **22.63초**, 잘못된 링크 입력 안내 **0.37초**였습니다. 대기 UI는 지역·예산·일정과 대안 검토를 안내하고 종료 후 타임라인을 표시합니다. 23번 통과는 실측과 제출자의 직접 확인을 근거로 합니다. [Mock·실제 측정 대조](evidence/checklist-23-measurements.png) · [실제 대기](evidence/checklist-23-live-wait.png) · [상한 응답](evidence/checklist-23-live-result.png) · [오류 화면](evidence/checklist-23-live-error.png)
+
+23·27번 증빙 화면의 최종 판정은 공식 체크리스트와 동일하게 제출자 확인 기준으로 표시합니다.
 
 ## 최종 설치·회귀 검증
 

@@ -95,7 +95,7 @@ npm.cmd --prefix frontend run dev
 
 ## 검증 및 제출 자료
 
-- [공식 셀프 체크리스트](셀프체크리스트.xlsx) · 필수 25/27, F3020 통과, 미확인 23번(사용자 대기 적정성)·27번(공식 기획 검증 시각)
+- [공식 셀프 체크리스트](셀프체크리스트.xlsx) · 필수 27/27, F3020 통과, 미확인 0개. 23·27번은 제출자가 직접 확인했습니다.
 - [통합 검증 결과](reports/verification.md) · [요구사항 추적·Agent 설계·API 명세](YKP_codex_handoff_v1/docs/ARCHITECTURE_AND_SCHEMA_v1.md) · [Tool 정의](reports/evidence/phase-01-tool-specs.json)
 - [대표 시나리오 5건과 전체 로그](reports/evidence/day-03-scenarios.json) · [API 화면](reports/evidence/checklist-docs.png) · [구현 소스](backend/app/) · [Vue 소스](frontend/src/)
 
