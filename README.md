@@ -14,7 +14,7 @@
 
 ## 주요 기능
 
-- **필수 기능 F3001~F3019** · 독립 준비 계획 생성, 예산·일정 조건 추출, 외부 API Tool Calling, 제약 판정과 최대 3회 재계획, 세션 Memory, 계획 저장·수정·삭제, Agent 실행 기록
+- **필수 기능 F3001~F3019** · 희망 지역과 예산에 맞춰 독립 준비 계획을 세우고, 카카오 로컬·과거 전월세·건축HUB 데이터를 조회합니다. 예산·일정 제약을 판단해 필요할 때 최대 3회 재계획합니다. 같은 세션에서 조건을 바꾸고, 계획을 저장·조회·수정·삭제하며, Agent 단계와 Tool 호출 기록을 확인할 수 있습니다.
 - **선택 심화 F3020** · Tool 중복 호출, 재계획 초과, 계획 외 실행, 실행 누락을 규칙으로 판정합니다. 이상 판정에서만 GMS 진단을 요청합니다.
 
 ## 시스템 아키텍처
@@ -37,29 +37,92 @@ flowchart LR
 
 ## 실행 방법
 
-Windows PowerShell에서 프로젝트 루트 기준으로 실행합니다.
+Windows의 Git Bash 기준입니다. Python 3.11과 Node.js/npm을 준비하고, 각 터미널에서 프로젝트 루트를 작업 폴더로 사용합니다.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-npm.cmd --prefix frontend ci
-Copy-Item .env.example .env
+### 설치 및 설정
+
+#### STEP 1. 프로젝트 폴더 이동
+
+저장소를 내려받은 상위 폴더에서 프로젝트 루트로 이동합니다. 이미 프로젝트 루트에 있다면 생략합니다.
+
+```bash
+cd Youth-Kitty-Planner
 ```
 
-기존 `.env`가 있으면 복사 명령을 생략합니다. 아래 환경변수를 설정한 뒤 별도 터미널에서 FastAPI와 Vue를 실행합니다.
+#### STEP 2. 가상환경 생성 및 활성화
 
-```powershell
-.\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+프로젝트의 Python 가상환경을 활성화합니다. 기존 `.venv`가 있다면 첫 번째 명령을 생략합니다.
+
+```bash
+python -m venv .venv
+source .venv/Scripts/activate
+```
+
+#### STEP 3. 백엔드 의존성 설치
+
+활성화한 가상환경에 FastAPI와 Agent 실행에 필요한 패키지를 설치합니다.
+
+```bash
+pip install -r requirements.txt
+```
+
+#### STEP 4. 프론트엔드 의존성 설치
+
+잠금 파일에 맞춰 Vue 프론트엔드 패키지를 설치합니다.
+
+```bash
+npm.cmd --prefix frontend ci
+```
+
+#### STEP 5. 환경변수 설정
+
+설정 예시를 `.env`로 복사합니다. **기존 `.env`가 있으면 이 명령을 생략합니다.** Mock으로 시연할 때는 이 단계 전체를 생략할 수 있습니다.
+
+```bash
+cp .env.example .env
+```
+
+`.env`에 발급받은 `GMS_KEY`, `KAKAO_REST_API_KEY`, `MOLIT_RENT_API_KEY`, `BUILDING_HUB_API_KEY`를 입력하고, `GMS_URL`에는 Responses 엔드포인트, `GMS_MODEL`에는 사용할 모델 ID를 설정합니다. [API 키 발급 및 설정](#api-키-발급-및-설정)
+
+### 서버 실행 및 접속
+
+#### STEP 6. 백엔드 실행 — 터미널 1
+
+가상환경을 활성화한 Git Bash에서 FastAPI를 8000번 포트로 실행하고 터미널을 열어 둡니다.
+
+```bash
+python -m uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+#### STEP 7. 프론트엔드 실행 — 터미널 2
+
+새 Git Bash를 열고 프로젝트 루트에서 Vue 개발 서버를 실행합니다.
+
+```bash
 npm.cmd --prefix frontend run dev
 ```
 
-[플래너](http://127.0.0.1:5173/) · [Swagger](http://127.0.0.1:8000/docs) · [OpenAPI JSON](http://127.0.0.1:8000/openapi.json) · [헬스 체크](http://127.0.0.1:8000/api/v1/health)
+#### STEP 8. 웹사이트 접속
 
-외부 호출 없이 시연하려면 FastAPI 실행 명령을 아래 명령으로 바꿉니다. 이 모드는 Mock GMS·합성 외부 데이터와 임시 SQLite를 사용합니다.
+두 서버가 시작되면 브라우저에서 플래너를 열고 필요에 따라 백엔드 문서와 상태를 확인합니다.
 
-```powershell
-.\.venv\Scripts\python.exe -m uvicorn ui_preview:create_preview --factory --app-dir tests/integration --host 127.0.0.1 --port 8000
+| 주소 | 용도 |
+|---|---|
+| [http://127.0.0.1:5173](http://127.0.0.1:5173) | 청년냥이 플래너 웹사이트 |
+| [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) | FastAPI Swagger 문서 |
+| [http://127.0.0.1:8000/api/v1/health](http://127.0.0.1:8000/api/v1/health) | 서버 정상 작동 확인 |
+
+> `http://127.0.0.1:8000/`은 루트 경로가 정의되어 있지 않아 `404 Not Found`가 정상입니다. 서버 상태는 `/api/v1/health`에서 확인합니다.
+
+### Mock 시연 방법
+
+API 키 없이 시연하려면 **터미널 1에서 STEP 6 대신** 아래 명령을 실행합니다. 두 백엔드는 모두 8000번 포트를 사용하므로 기존 FastAPI가 켜져 있다면 `Ctrl+C`로 먼저 종료합니다. Vue 실행과 웹사이트 접속은 STEP 7~8과 같습니다.
+
+```bash
+python -m uvicorn ui_preview:create_preview --factory --app-dir tests/integration --host 127.0.0.1 --port 8000
 ```
+
+Mock 서버는 합성 GMS 응답과 외부 데이터, 임시 SQLite를 사용합니다.
 
 예시 요청은 “서울 종로구(11110) 희망, 보증금 3000만원, 월세 45만원. 2025년 1월 거래. 준비 시작일 2026-11-20, 준비 기간 7일, 출근일 2026-12-01. 대안으로 서울 중구(11140), 서울 용산구(11170), 서울 성동구(11200) 허용”입니다. 이어서 “월세만 55만원으로 바꿔줘”를 전송한 뒤 계획 저장과 실행 기록을 확인합니다.
 
