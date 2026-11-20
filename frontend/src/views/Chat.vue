@@ -155,7 +155,10 @@ async function send() {
           </button>
         </div>
       </div>
-      <p v-if="conversation.pending" class="loading" role="status"><span class="spinner" aria-hidden="true"></span>요청을 처리하고 있습니다. 완료되면 실행 기록을 표시해요.</p>
+      <div v-if="conversation.pending" class="callout" role="status">
+        <div class="loading"><span class="spinner" aria-hidden="true"></span>요청을 처리하고 있습니다.</div>
+        <p>계획 요청은 지역·예산·일정을 확인하고, 조건에 맞지 않으면 대안을 검토합니다. 완료되면 확인 결과와 실행 기록을 표시해요.</p>
+      </div>
       <form class="composer" @submit.prevent="send">
         <label for="message" class="sr-only">플래너에게 보낼 메시지</label>
         <textarea id="message" ref="textarea" v-model="input" rows="2" maxlength="4000"
